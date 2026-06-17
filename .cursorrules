@@ -32,15 +32,22 @@ These rules define strict guidelines for AI agents working on the Powercord proj
     ```
 
 * **No Unstaged Hard Resets**: Never execute `git reset --hard` to resolve carriage return (CRLF) noise when the workspace contains uncommitted changes.
-* **Line Ending Config**: Ensure `core.autocrlf` is set to `input` and `core.filemode` is set to `true` locally in every repository to maintain LF line endings and preserve executable permissions.
+* **Line Ending Config**: Ensure `core.autocrlf` is set to `input` locally in every repository to maintain LF line endings and preserve executable permissions.
 * **Scratch Script Isolation**: Do not leave temporary test or verification scripts (e.g., `check.py`, `verify_sprocket.py`) in the codebase. Always delete them before completion or store them in the conversation artifacts scratch directory: `<appDataDir>/brain/<conversation-id>/scratch/`.
+* **Agent Directory Naming Convention**: Prevent conflation between agent configuration and runtime directories:
+  * `.agent/` (singular): Reserved for symlinked/static project workflow specifications, skills, and configuration parameters.
+  * `.agents/` (plural): Reserved for runtime agent operations, workspace traces, and temporary logs. This directory must be kept untracked and explicitly ignored in `.gitignore`.
 
 ---
 
 ## 3. Upstream Contamination Prevention
 
-* **Client Dependencies**: Do not install extension-specific Python dependencies (e.g., `py7zr`, `rarfile`) directly into the base repository of `powercord-client`.
-* **Testing & Downstream Workflows**: All testing of client + extension integrations must be performed using isolated downstream environments or worktrees (similar to the server-side test isolation config), keeping upstream branches clean.
+* **Server & Client Dependencies**: Do not check in or commit extension-specific dependencies (e.g., `py7zr`, `rarfile`, `pretty-midi`, `librosa`, etc.) directly into the core `pyproject.toml` or `poetry.lock` of `powercord` (core server) or `powercord-client` (core client). Keep core dependency configurations strictly limited to base framework requirements and core internal extensions (`utilities`, `example`).
+* **Testing & Downstream Isolation**: All testing of client/server + external extension integrations must be performed in downstream repositories (e.g., `powercord-downstream-server`) or isolated worktrees, keeping upstream main branches completely clean.
+* **Post-Development Verification & Clean-up**: If external extensions are temporarily installed upstream for core-compatibility testing during local development:
+  1. They **must** be uninstalled before task completion using the official uninstall command (`poetry run python -m app.common.extension_manager uninstall <name>`).
+  2. Verify that uninstallation successfully cleaned up `pyproject.toml` and `poetry.lock` using `git diff`.
+  3. Ensure no local untracked folders remain in the core workspace.
 * **Pytest Namespace Separation**: Never name FastAPI app instances `test_app` or similar inside test modules, as this triggers pytest collection warnings. Use `app` or `client_app` instead.
 
 ---
@@ -74,3 +81,10 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * Downstream Client Deployment Workflow: Read `.agent/workflows/fresh-install-downstream-client.md`
 * **Check for Unlinked Workflows/Skills**: Actively check for any new workflows or skills defined within subdirectories (such as `powercord/.agents/workflows/` or `powercord/.agents/skills/`) that have not been symlinked to the project root (`.agent/workflows/` or `.agent/skills/`). If any are found, suggest to the user that they be symlinked to ensure IDE auto-discovery and proper slash command integration.
 * **Automatic Guardrail & Workflow Reflection**: Once the main objectives of a session are met, the agent must evaluate the session's interactions, identify any friction points (e.g. port conflicts, missing migrations, setup hurdles), and present recommended improvements/additions to the `.cursorrules` and `.agent/*` files automatically in its final turn.
+
+---
+
+## 7. Database Testing & Schema Alignment Guardrails
+
+* **Test Database Teardown & Isolation**: When writing or updating test cases that write records to the database (e.g., WidgetSettings, UserSetting, DiscordRole), always define a teardown or conftest cleanup routine that deletes modified rows to prevent state leakage and order-dependent test suite failures.
+* **Alembic Type Conformance**: Ensure database column types in SQLModel models match the migrations exactly (e.g., matching SQLModel Text/String length constraints with migration VARCHAR/Text columns) to prevent Alembic autogenerate drift warnings during check runs.
