@@ -38,6 +38,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * `.agent/` (singular): Reserved for symlinked/static project workflow specifications, skills, and configuration parameters.
   * `.agents/` (plural): Reserved for runtime agent operations, workspace traces, and temporary logs. This directory must be kept untracked and explicitly ignored in `.gitignore`.
 * **Uncommitted Upstream Changes**: Before running `init-target` downstream or initiating downstream setup scripts, ensure all upstream code changes are fully committed. Downstream setup tasks use `git clone` to copy upstream, meaning unstaged or uncommitted upstream modifications will be ignored, leading to mismatched behavior.
+* **Source vs. Downstream Edits**: While testing must be executed in downstream testbeds (e.g., `powercord-downstream-server`), any code modifications meant to be persisted (such as framework logic, `cloudbuild.yaml`, and extension code) must be authored directly in their respective source repositories (`powercord` or `powercord-extensions/<ext>`) and then copied or re-installed downstream, rather than edited directly in the generated or git-ignored downstream directories.
 
 ---
 
@@ -105,4 +106,5 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 * **Thread-Safe In-Memory Cache Mutations**: Standardize on wrapping in-memory cache mutations and access in a `threading.Lock` to guarantee safety against concurrent race conditions during FastAPI asynchronous/synchronous execution.
 * **Hermetic Test Mockups**: Ensure any testing of endpoints that perform loopback or internal HTTP requests (e.g., bot API, sprocket API) are fully mocked to prevent hangs, timeouts, or dependency on running services during local test execution.
 * **Hermetic Database Connection Pooling for Tests**: When configuring test engine instances in pytest `conftest.py` files, use `NullPool` (disabling connection pooling) and explicitly dispose the engines and connection objects inside the fixture teardown blocks to avoid PostgreSQL deadlocks.
+* **Cloud Build/CI Database Dependencies**: If the CI/CD pipeline (`cloudbuild.yaml`) executes QA steps running tests that depend on a live database, ensure a temporary sidecar database container (matching the target PostgreSQL version) is started in a prior step on the shared network (e.g., `cloudbuild`), and wait for it to accept connections before invoking pytest. Always use `textwrap.dedent` if writing multi-line python check scripts in YAML to avoid indentation parsing errors.
 
