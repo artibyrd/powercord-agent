@@ -10,9 +10,32 @@ This workflow guides human developers and Antigravity agents in verifying the he
 1. A clean Docker environment.
 2. Poetry and Python 3.12 installed on the host.
 
+## Timing Instrumentation Guidance
+For performance tracking and auditing, you can measure the execution time of any `just` recipe. Wrap the audit command steps with the `just _timed` wrapper recipe as follows:
+```bash
+just _timed <recipe-name> [arguments]
+```
+For example, to run and time the QA check or lint recipes:
+```bash
+just _timed lint
+just _timed check
+just _timed test --type all
+```
+This wrapper will execute the command and output the elapsed time upon completion.
+
 ---
 
 ## Steps
+
+### 0. Pre-flight QA Check
+Before proceeding with the downstream audit, perform a pre-flight QA check on the upstream codebase to ensure a stable base.
+Run linting and type checking in the upstream directory:
+```bash
+cd "../powercord"
+just lint
+just check
+```
+If these checks fail, fix the failures in the upstream repository first.
 
 ### 1. Perform Downstream Installation Setup
 Run the downstream installation setup workflow to establish a fresh environment:
@@ -25,7 +48,7 @@ Verify that the `app` container starts up cleanly and prints `Application startu
 ### 2. Verify Database Connectivity
 Ensure that the host can connect directly to the containerized database:
 ```bash
-cd powercord-downstream-server
+cd "../powercord-downstream-server"
 just postgres
 ```
 Expected output: `Connection successful: postgresql+pg8000://...`
@@ -82,9 +105,6 @@ just ext-list
 
 # Run no-op tests
 just honeypot-noop
-
-# Run migration script
-just midi-migrate "../powercord/bgml-data.sql"
 ```
 
 ### 6. Verify Host-based Dev Stack Startup
@@ -98,7 +118,7 @@ Test running the development servers on the host:
 7. Clean up the standalone container: `docker rm -f powercord-pg-dev`
 
 ### 7. Restore Clean State
-Bake-in extensions and restore the containerized daemon stack:
+Bake-in extensions and restore the containerized daemon stack (this brings the total `rebuild-target` calls across installation and audit down to 2, from 3):
 ```bash
 just rebuild-target
 ```
