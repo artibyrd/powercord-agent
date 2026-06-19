@@ -37,6 +37,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 * **Agent Directory Naming Convention**: Prevent conflation between agent configuration and runtime directories:
   * `.agent/` (singular): Reserved for symlinked/static project workflow specifications, skills, and configuration parameters.
   * `.agents/` (plural): Reserved for runtime agent operations, workspace traces, and temporary logs. This directory must be kept untracked and explicitly ignored in `.gitignore`.
+* **Uncommitted Upstream Changes**: Before running `init-target` downstream or initiating downstream setup scripts, ensure all upstream code changes are fully committed. Downstream setup tasks use `git clone` to copy upstream, meaning unstaged or uncommitted upstream modifications will be ignored, leading to mismatched behavior.
 
 ---
 
@@ -69,6 +70,11 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * Extensions containing guild-scoped data must register a `delete_guild_data` hook in their `__init__.py`.
   * Global catalogs (e.g., `midi_library`) must be explicitly excluded from guild-level data deletion to preserve catalog integrity.
 * **Sprocket Partial Updates**: When implementing sprocket PATCH/POST config routes, handle partial payloads by checking `payload.model_fields_set` or `exclude_unset=True` rather than blindly overriding database fields with default/None values.
+* **Widget Naming & Scope Filtering**: Strictly adhere to prefix-based namespace conventions for all FastHTML dashboard widgets:
+  * `admin_` for global admin controls (rendered on `/admin`).
+  * `guild_admin_` for guild-specific admin configurations (rendered on `/dashboard/{guild_id}`).
+  * All other names represent public/visitor widgets.
+  * Pages rendering widgets must strictly validate and filter widgets based on their scope prefixes to prevent missing argument `TypeError` exceptions (e.g., public welcome page `/` must skip both `admin_` and `guild_admin_` widgets).
 
 ---
 
