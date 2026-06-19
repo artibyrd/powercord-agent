@@ -102,3 +102,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 
 * **Flexible Performance Assertions:** Avoid strict maximum execution time bounds (e.g. `< 0.05s`) in stress and performance unit tests to avoid transient CPU timing failures. Instead, use comparative bounds or scale-based thresholds.
 * **Hermetic Database Contexts:** Every unit or integration test creating records in Discord configuration tables (roles, channels, overwrites) must strictly run cleanup deletions during teardown phases.
+* **Thread-Safe In-Memory Cache Mutations**: Standardize on wrapping in-memory cache mutations and access in a `threading.Lock` to guarantee safety against concurrent race conditions during FastAPI asynchronous/synchronous execution.
+* **Hermetic Test Mockups**: Ensure any testing of endpoints that perform loopback or internal HTTP requests (e.g., bot API, sprocket API) are fully mocked to prevent hangs, timeouts, or dependency on running services during local test execution.
+* **Hermetic Database Connection Pooling for Tests**: When configuring test engine instances in pytest `conftest.py` files, use `NullPool` (disabling connection pooling) and explicitly dispose the engines and connection objects inside the fixture teardown blocks to avoid PostgreSQL deadlocks.
+
