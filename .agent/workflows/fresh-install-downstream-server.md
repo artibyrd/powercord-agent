@@ -112,3 +112,18 @@ fi
 cd "/path/to/target-project"
 docker compose logs --tail 30 app
 ```
+
+---
+
+## Testing First-Load & Fresh Build Logic
+
+When validating features that run on first-load or rely on a "fresh database" (for example, the automatic provisioning of default widgets when a guild dashboard is opened for the first time), **pre-existing database state will bypass this logic**. 
+
+To properly test these behaviors:
+1. You must drop the database volume to clear any lingering layout or widget settings.
+2. In the target directory (e.g. `powercord-downstream-server`), run:
+   ```bash
+   docker compose down -v
+   just rebuild-target
+   ```
+3. Access the dashboard. Because the database is empty, the first-load widget provisioning logic will execute, enabling the default widgets configured in `extension.json`.
