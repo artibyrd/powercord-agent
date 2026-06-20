@@ -61,11 +61,16 @@ just install
 just db-upgrade
 ```
 
-4. **Extension Injection:** On the host, natively install domain-specific endpoints and capabilities.
+4. **Extension Injection:** Dynamically discover and install all server extensions from the extensions source directory.
 ```bash
 cd "../powercord-downstream-server"
-just ext-install "../powercord-extensions/midi_library"
-just ext-install "../powercord-extensions/honeypot"
+for ext_dir in ../powercord-extensions/*/; do
+    if [ -d "$ext_dir" ] && [ -f "$ext_dir/pyproject.toml" ]; then
+        ext_name=$(basename "$ext_dir")
+        echo "→ Installing extension: $ext_name"
+        just ext-install "$ext_dir"
+    fi
+done
 ```
 
 5. **Containerization:** Spin up the target containers, ensuring no port conflicts on port 5433.

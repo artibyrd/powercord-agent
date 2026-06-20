@@ -52,10 +52,16 @@ cd "/path/to/target-client"
 just install
 ```
 
-3. **Extension Injection:** Natively install domain-specific companion UI extensions from your local source ecosystem.
+3. **Extension Injection:** Dynamically discover and install all client extensions from the client extensions source directory.
 ```bash
 cd "/path/to/target-client"
-just ext-install "../powercord-client-extensions/midi_library_client"
+for ext_dir in ../powercord-client-extensions/*/; do
+    if [ -d "$ext_dir" ] && [ -f "$ext_dir/pyproject.toml" ]; then
+        ext_name=$(basename "$ext_dir")
+        echo "→ Installing client extension: $ext_name"
+        just ext-install "$ext_dir"
+    fi
+done
 ```
 
 4. **Validation:** Launch the companion desktop application to verify it boots correctly with the extensions mounted.

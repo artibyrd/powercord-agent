@@ -38,7 +38,8 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * `.agent/` (singular): Reserved for symlinked/static project workflow specifications, skills, and configuration parameters.
   * `.agents/` (plural): Reserved for runtime agent operations, workspace traces, and temporary logs. This directory must be kept untracked and explicitly ignored in `.gitignore`.
 * **Uncommitted Upstream Changes**: Before running `init-target` downstream or initiating downstream setup scripts, ensure all upstream code changes are fully committed. Downstream setup tasks use `git clone` to copy upstream, meaning unstaged or uncommitted upstream modifications will be ignored, leading to mismatched behavior.
-* **Source vs. Downstream Edits**: While testing must be executed in downstream testbeds (e.g., `powercord-downstream-server`), any code modifications meant to be persisted (such as framework logic, `cloudbuild.yaml`, and extension code) must be authored directly in their respective source repositories (`powercord` or `powercord-extensions/<ext>`) and then copied or re-installed downstream, rather than edited directly in the generated or git-ignored downstream directories.
+* **Source vs. Downstream Edits**: While testing must be executed in downstream testbeds (e.g., `powercord-downstream-server`), any code modifications meant to be persisted (such as framework logic, `cloudbuild.yaml`, and extension code) must be authored directly in their respective source repositories (`powercord` or `powercord-extensions/<ext>`) and then synced downstream via `/reconcile-downstream-server`, rather than edited directly in the downstream directories. **Verification**: Before ending a session, run `git status` in `powercord-downstream-server` — if it shows modified tracked files, those edits were made in the wrong place. Discard them and re-apply in the upstream repo.
+* **Post-Commit Downstream Reconciliation**: After committing changes to upstream repositories (`powercord` or `powercord-extensions/*`), always reconcile the downstream deployment to prevent drift accumulation. Run the `/reconcile-downstream-server` workflow, which discards local modifications, pulls upstream commits, and re-installs extensions. Never leave a session with the downstream repo in a dirty state relative to committed upstream changes.
 
 ---
 
@@ -76,6 +77,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * `guild_admin_` for guild-specific admin configurations (rendered on `/dashboard/{guild_id}`).
   * All other names represent public/visitor widgets.
   * Pages rendering widgets must strictly validate and filter widgets based on their scope prefixes to prevent missing argument `TypeError` exceptions (e.g., public welcome page `/` must skip both `admin_` and `guild_admin_` widgets).
+* **Dynamic Extension Discovery**: Never hardcode extension names in workflows, scripts, or automation. Instead, dynamically discover extensions by iterating over `powercord-extensions/*/` (server) or `powercord-client-extensions/*/` (client) directories, using the presence of `pyproject.toml` as the sentinel for a valid extension. This ensures new extensions are automatically included without modifying existing workflows.
 
 ---
 
@@ -86,6 +88,12 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * GCP Production VM Operations: Read `.agent/skills/powercord-gcp-operations/SKILL.md`
   * Downstream Server Deployment Workflow: Read `.agent/workflows/fresh-install-downstream-server.md`
   * Downstream Client Deployment Workflow: Read `.agent/workflows/fresh-install-downstream-client.md`
+  * Downstream Server Reconciliation Workflow: Read `.agent/workflows/reconcile-downstream-server.md`
+  * Downstream Server Audit Workflow: Read `.agent/workflows/audit-workflow-downstream-server.md`
+* **Downstream Workflow Selection**: Choose the appropriate workflow based on the current state of the downstream repo:
+  * **`/reconcile-downstream-server`**: Use after committing upstream changes when the downstream has drifted (dirty git status, behind on commits). This is the lightweight, non-destructive option.
+  * **`/fresh-install-downstream-server`**: Use when the downstream is structurally broken, has merge conflicts that can't be fast-forwarded, or needs a complete reset including database volume wipe.
+  * **`/audit-workflow-downstream-server`**: Use to verify overall workspace health including QA, database connectivity, and recipe validation.
 * **Check for Unlinked Workflows/Skills**: Actively check for any new workflows or skills defined within subdirectories (such as `powercord/.agents/workflows/` or `powercord/.agents/skills/`) that have not been symlinked to the project root (`.agent/workflows/` or `.agent/skills/`). If any are found, suggest to the user that they be symlinked to ensure IDE auto-discovery and proper slash command integration.
 * **Automatic Guardrail & Workflow Reflection**: Once the main objectives of a session are met, the agent must evaluate the session's interactions, identify any friction points (e.g. port conflicts, missing migrations, setup hurdles), and present recommended improvements/additions to the `.cursorrules` and `.agent/*` files automatically in its final turn.
 
