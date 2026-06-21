@@ -13,7 +13,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 * **Grounded in Best Practices**: Always suggest solutions grounded in established industry best practices (e.g., standard OS layouts, native tool capabilities, official configuration paths) rather than custom or convoluted workarounds.
 * **Human Code Review**: Never execute Git commits directly. Always present changes for human code review in a structured format (similar to a pull request description) at the end of the implementation phase, letting the human review and commit the changes themselves.
 * **Leverage Visualizations (Mermaid/Images)**: Proactively seek opportunities to include visual diagrams (such as Mermaid flowcharts, sequence diagrams, or architecture maps) in implementation plans, walkthroughs, and project markdown documentation to clarify complex logic, workspace hierarchies, and multi-repo interactions. A picture is worth a thousand words!
-* **Pre-Commit Linting & Formatting**: Prior to staging and committing modifications to the upstream repositories, always run formatting and lint checks (e.g., `poetry run ruff check --fix .` and `poetry run ruff format .`) to ensure the changes comply with style checks and avoid breaking CI/CD or downstream test builds.
+* **Pre-Commit Linting & Formatting**: See Section 2 (Git & Workspace) for pre-commit formatting and lint requirements.
 
 ---
 
@@ -47,6 +47,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   git reset --hard origin/main
   git clean -fd
   ```
+* **Pre-Commit Linting & Formatting**: Before presenting changes for human review, run `poetry run ruff check --fix . && poetry run ruff format .` in the source repository to ensure compliance with style checks and avoid breaking CI/CD or downstream test builds. This applies to `powercord/`, each `powercord-extensions/<ext>/`, and `powercord-client/`.
 
 ---
 
@@ -86,6 +87,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * All other names represent public/visitor widgets.
   * Pages rendering widgets must strictly validate and filter widgets based on their scope prefixes to prevent missing argument `TypeError` exceptions (e.g., public welcome page `/` must skip both `admin_` and `guild_admin_` widgets).
 * **Dynamic Extension Discovery**: Never hardcode extension names in workflows, scripts, or automation. Instead, dynamically discover extensions by iterating over `powercord-extensions/*/` (server) or `powercord-client-extensions/*/` (client) directories, using the presence of `pyproject.toml` as the sentinel for a valid extension. This ensures new extensions are automatically included without modifying existing workflows.
+* **Discord Permission Precedence in Security Rules**: When writing or modifying security audit rules that check channel-scoped permissions (Send Messages, Mention Everyone, etc.), always gate on View Channel (`1 << 10`) first. Discord enforces an implicit dependency: if a role cannot see a channel, all other channel-scoped permissions are inert. Additionally, channel permission checks must account for parent category overwrite inheritance — use `get_effective_channel_permissions()` with `parent_overwrites` rather than implementing inline permission resolution logic.
 * **FastHTML / DaisyUI Component Rules**:
   * **Card Parameter Integrity**: Always invoke `Card` components with `Card(title, content, **kwargs)`. Avoid passing the content block as the first argument as it causes header styling layout bugs.
   * **Complex Card Headers**: If the card header requires custom layouts (e.g., inline forms, action buttons, or flex positioning), pass a `Div` container containing the components directly as the `title` argument (the `Card` component will render it natively without wrapping it in a default `H3`).
@@ -117,6 +119,8 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 * **Test Database Teardown & Isolation**: When writing or updating test cases that write records to the database (e.g., WidgetSettings, UserSetting, DiscordRole), always define a teardown or conftest cleanup routine that deletes modified rows to prevent state leakage and order-dependent test suite failures.
 * **Alembic Type Conformance**: Ensure database column types in SQLModel models match the migrations exactly (e.g., matching SQLModel Text/String length constraints with migration VARCHAR/Text columns) to prevent Alembic autogenerate drift warnings during check runs.
 * **Testing Fresh Build/First-Load Logic**: When verifying or debugging widgets provisioning, default configuration creation, or first-load features, you must clear any existing database volume state. Pre-existing database rows (such as old WidgetSettings) will bypass first-load initialization pathways. To test cleanly, drop the database volume (`docker compose down -v`) and rebuild (`just rebuild-target`) to confirm default-loading and onboarding logic works as expected.
+* **Docker Networking Fallback**: If the dev database container (`powercord-pg-dev`) is unreachable via `localhost:5433` due to IPv4 forwarding being disabled (symptom: `WARNING: IPv4 forwarding is disabled. Networking will not work.`), recreate the container with `--network host` mode and connect via `localhost:5432` (the container's native port). Pass `POWERCORD_DB_HOST=localhost:5432` when running tests. The `_ensure-db` recipe uses bridge networking with port mapping by default, which requires `net.ipv4.ip_forward=1`.
+* **Test Database Credential Alignment**: The test harness (`conftest.py`) defaults to user `powercord` / password `test_pass` via `os.environ.setdefault`. When provisioning the dev database container manually (outside of `just test`), ensure these credentials match by exporting `POWERCORD_POSTGRES_USER=powercord` and `POWERCORD_POSTGRES_PASSWORD=test_pass` before running `just _ensure-db`.
 
 ---
 
