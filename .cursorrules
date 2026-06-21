@@ -101,15 +101,25 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 
 * **Skill Reference**: When performing development, deployment, or testing tasks, refer to the custom skills and workflows located inside the project:
   * Ecosystem Architecture & Testing: Read `.agent/skills/powercord-ecosystem/SKILL.md`
+  * Extension Authoring & Scaffolding: Read `.agent/skills/powercord-extension-authoring/SKILL.md`
+  * Database Operations & Migrations: Read `.agent/skills/powercord-database-operations/SKILL.md`
+  * Testing & QA Practices: Read `.agent/skills/powercord-testing/SKILL.md`
+  * Deployment & CI/CD: Read `.agent/skills/powercord-deployment/SKILL.md`
+  * Security Auditor System: Read `.agent/skills/powercord-security-auditor/SKILL.md`
+  * Client (Flet) Development: Read `.agent/skills/powercord-client-development/SKILL.md`
   * GCP Production VM Operations: Read `.agent/skills/powercord-gcp-operations/SKILL.md`
   * Downstream Server Deployment Workflow: Read `.agent/workflows/fresh-install-downstream-server.md`
   * Downstream Client Deployment Workflow: Read `.agent/workflows/fresh-install-downstream-client.md`
   * Downstream Server Reconciliation Workflow: Read `.agent/workflows/reconcile-downstream-server.md`
+  * Downstream Client Reconciliation Workflow: Read `.agent/workflows/reconcile-downstream-client.md`
   * Downstream Server Audit Workflow: Read `.agent/workflows/audit-workflow-downstream-server.md`
+  * Downstream Client Audit Workflow: Read `.agent/workflows/audit-workflow-downstream-client.md`
+  * Production Deployment Workflow: Read `.agent/workflows/deploy-production.md`
 * **Downstream Workflow Selection**: Choose the appropriate workflow based on the current state of the downstream repo:
-  * **`/reconcile-downstream-server`**: Use after committing upstream changes when the downstream has drifted (dirty git status, behind on commits). This is the lightweight, non-destructive option.
-  * **`/fresh-install-downstream-server`**: Use when the downstream is structurally broken, has merge conflicts that can't be fast-forwarded, or needs a complete reset including database volume wipe.
-  * **`/audit-workflow-downstream-server`**: Use to verify overall workspace health including QA, database connectivity, and recipe validation.
+  * **`/reconcile-downstream-server`** / **`/reconcile-downstream-client`**: Use after committing upstream changes when the downstream has drifted (dirty git status, behind on commits). This is the lightweight, non-destructive option.
+  * **`/fresh-install-downstream-server`** / **`/fresh-install-downstream-client`**: Use when the downstream is structurally broken, has merge conflicts that can't be fast-forwarded, or needs a complete reset including database volume wipe.
+  * **`/audit-workflow-downstream-server`** / **`/audit-workflow-downstream-client`**: Use to verify overall workspace health including QA, database connectivity, and recipe validation.
+  * **`/deploy-production`**: Use to deploy to the live GCP production server. **⚠️ Requires direct explicit user consent — this rolls over the production server.**
 * **Check for Unlinked Workflows/Skills**: Actively check for any new workflows or skills defined within subdirectories (such as `powercord/.agents/workflows/` or `powercord/.agents/skills/`) that have not been symlinked to the project root (`.agent/workflows/` or `.agent/skills/`). If any are found, suggest to the user that they be symlinked to ensure IDE auto-discovery and proper slash command integration.
 * **Automatic Guardrail & Workflow Reflection**: Once the main objectives of a session are met, the agent must evaluate the session's interactions, identify any friction points (e.g. port conflicts, missing migrations, setup hurdles), and present recommended improvements/additions to the `.cursorrules` and `.agent/*` files automatically in its final turn.
 
