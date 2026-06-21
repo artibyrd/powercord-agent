@@ -13,6 +13,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 * **Grounded in Best Practices**: Always suggest solutions grounded in established industry best practices (e.g., standard OS layouts, native tool capabilities, official configuration paths) rather than custom or convoluted workarounds.
 * **Human Code Review**: Never execute Git commits directly. Always present changes for human code review in a structured format (similar to a pull request description) at the end of the implementation phase, letting the human review and commit the changes themselves.
 * **Leverage Visualizations (Mermaid/Images)**: Proactively seek opportunities to include visual diagrams (such as Mermaid flowcharts, sequence diagrams, or architecture maps) in implementation plans, walkthroughs, and project markdown documentation to clarify complex logic, workspace hierarchies, and multi-repo interactions. A picture is worth a thousand words!
+* **Pre-Commit Linting & Formatting**: Prior to staging and committing modifications to the upstream repositories, always run formatting and lint checks (e.g., `poetry run ruff check --fix .` and `poetry run ruff format .`) to ensure the changes comply with style checks and avoid breaking CI/CD or downstream test builds.
 
 ---
 
@@ -40,6 +41,12 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 * **Uncommitted Upstream Changes**: Before running `init-target` downstream or initiating downstream setup scripts, ensure all upstream code changes are fully committed. Downstream setup tasks use `git clone` to copy upstream, meaning unstaged or uncommitted upstream modifications will be ignored, leading to mismatched behavior.
 * **Source vs. Downstream Edits**: While testing must be executed in downstream testbeds (e.g., `powercord-downstream-server`), any code modifications meant to be persisted (such as framework logic, `cloudbuild.yaml`, and extension code) must be authored directly in their respective source repositories (`powercord` or `powercord-extensions/<ext>`) and then synced downstream via `/reconcile-downstream-server`, rather than edited directly in the downstream directories. **Verification**: Before ending a session, run `git status` in `powercord-downstream-server` — if it shows modified tracked files, those edits were made in the wrong place. Discard them and re-apply in the upstream repo.
 * **Post-Commit Downstream Reconciliation**: After committing changes to upstream repositories (`powercord` or `powercord-extensions/*`), always reconcile the downstream deployment to prevent drift accumulation. Run the `/reconcile-downstream-server` workflow, which discards local modifications, pulls upstream commits, and re-installs extensions. Never leave a session with the downstream repo in a dirty state relative to committed upstream changes.
+* **Amended Upstream History Reconciliation**: If the upstream repository (`powercord/`) history is amended, rebased, or force-pushed, a standard `git pull` in the downstream target will fail due to history divergence. To resolve this cleanly, fetch the latest branches and hard-reset the downstream HEAD to match:
+  ```bash
+  git fetch origin
+  git reset --hard origin/main
+  git clean -fd
+  ```
 
 ---
 
@@ -59,6 +66,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 
 * **Bash Shell Enforcement**: All command execution scripts and Just recipes must run in a Bash/POSIX-compliant shell. Do not write Fish-specific syntax in Justfiles or automation scripts.
 * **Cross-Platform Justfiles**: Ensure any modified Just recipes do not contain Windows-specific commands (such as `cmd.exe` or PowerShell syntax).
+* **Poetry Environment Execution**: When executing local verification commands, running tests, or performing checks, always prefer prefixing commands with `poetry run` (e.g., `poetry run python ...`) instead of directly executing binaries from `.venv/bin/`. This guarantees dependency alignment and correct virtual environment containment.
 
 ---
 
@@ -78,6 +86,11 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * All other names represent public/visitor widgets.
   * Pages rendering widgets must strictly validate and filter widgets based on their scope prefixes to prevent missing argument `TypeError` exceptions (e.g., public welcome page `/` must skip both `admin_` and `guild_admin_` widgets).
 * **Dynamic Extension Discovery**: Never hardcode extension names in workflows, scripts, or automation. Instead, dynamically discover extensions by iterating over `powercord-extensions/*/` (server) or `powercord-client-extensions/*/` (client) directories, using the presence of `pyproject.toml` as the sentinel for a valid extension. This ensures new extensions are automatically included without modifying existing workflows.
+* **FastHTML / DaisyUI Component Rules**:
+  * **Card Parameter Integrity**: Always invoke `Card` components with `Card(title, content, **kwargs)`. Avoid passing the content block as the first argument as it causes header styling layout bugs.
+  * **Complex Card Headers**: If the card header requires custom layouts (e.g., inline forms, action buttons, or flex positioning), pass a `Div` container containing the components directly as the `title` argument (the `Card` component will render it natively without wrapping it in a default `H3`).
+  * **DaisyUI Tooltips**: Implement tooltips by setting `cls="tooltip tooltip-<position>"` and `data_tip="..."` on the element. FastHTML dynamically maps the keyword argument `data_tip` to the HTML `data-tip` attribute.
+  * **SVG Component Imports**: Import custom SVG elements (like `Svg`, `Circle`, `Line`, and `Text as SvgText`) from `fasthtml.svg` to avoid namespace conflicts.
 
 ---
 
