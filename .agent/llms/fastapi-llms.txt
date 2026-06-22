@@ -1,0 +1,46 @@
+# FastAPI Documentation
+
+> FastAPI is a modern, fast (high-performance), web framework for building APIs with Python >=3.8 based on standard Python type hints.
+
+## Core Concepts
+
+- [Tutorial - User Guide](https://fastapi.tiangolo.com/tutorial/): Step-by-step introduction to FastAPI core features.
+- [First Steps](https://fastapi.tiangolo.com/tutorial/first-steps/): Minimal FastAPI application scaffolding.
+- [Path Parameters](https://fastapi.tiangolo.com/tutorial/path-params/): Declaring paths with variables and type validation.
+- [Query Parameters](https://fastapi.tiangolo.com/tutorial/query-params/): Handling query params, defaults, and optional fields.
+- [Request Body](https://fastapi.tiangolo.com/tutorial/body/): Declaring JSON request bodies using Pydantic models.
+- [Query Parameters and String Validations](https://fastapi.tiangolo.com/tutorial/query-params-str-validations/): Adding metadata and validation to query parameters.
+
+## Dependency Injection
+
+- [Dependencies Intro](https://fastapi.tiangolo.com/tutorial/dependencies/): Sharing logic, database connections, security, and permissions.
+- [First Steps with Dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/first-steps/): Basic dependency declaration and injection.
+- [Classes as Dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/classes-as-dependencies/): Using Python classes as dependencies instead of functions.
+- [Sub-dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/sub-dependencies/): Nesting dependencies to construct hierarchical requirements.
+- [Dependencies in Path Operation Decorators](https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-in-path-operation-decorators/): Adding dependencies to paths without injecting parameters.
+- [Global Dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/global-dependencies/): Applying dependencies to all path operations in an APIRouter or FastAPI instance.
+- [Dependencies with yield](https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/): Resource setup and teardown (e.g. database sessions) using `yield`.
+
+## Routing & Structure
+
+- [Bigger Applications - Multiple Files](https://fastapi.tiangolo.com/tutorial/bigger-applications/): Structuring applications with `APIRouter` across files.
+- [CORS (Cross-Origin Resource Sharing)](https://fastapi.tiangolo.com/tutorial/cors/): Configuring origins, methods, and headers for web clients.
+- [Background Tasks](https://fastapi.tiangolo.com/tutorial/background-tasks/): Defining functions to run asynchronously after returning a response.
+
+## Security
+
+- [Security Intro](https://fastapi.tiangolo.com/tutorial/security/): Handling authentication and authorization.
+- [OAuth2 with Password and Bearer](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/): Full login flow, JWT tokens, password hashing, and token verification.
+
+## Advanced Guide
+
+- [Advanced User Guide](https://fastapi.tiangolo.com/advanced/): Additional advanced features and customization.
+- [Custom Response](https://fastapi.tiangolo.com/advanced/custom-response/): Returning raw text, HTML, file downloads, or streaming responses.
+- [Middleware](https://fastapi.tiangolo.com/advanced/middleware/): Modifying requests before they reach path operations, and responses before returning.
+
+## Reference
+
+- [FastAPI Reference](https://fastapi.tiangolo.com/reference/): API reference for class initialization, routers, exceptions, and models.
+- [FastAPI Class](https://fastapi.tiangolo.com/reference/fastapi/): Parameters and methods of the main `FastAPI` application class.
+- [APIRouter Class](https://fastapi.tiangolo.com/reference/apirouter/): API reference for the `APIRouter` class used for modular routing.
+- [Depends function](https://fastapi.tiangolo.com/reference/dependst/): API details of the dependency injection declaration function.

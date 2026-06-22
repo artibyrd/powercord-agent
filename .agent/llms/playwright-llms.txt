@@ -1,0 +1,35 @@
+# Playwright Python Documentation
+
+> Playwright enables reliable end-to-end testing for modern web apps. It supports all modern rendering engines including Chromium, WebKit, and Firefox.
+
+## Getting Started
+
+- [Playwright Python Docs](https://playwright.dev/python/docs/intro): Introduction and setup guide.
+- [First Test](https://playwright.dev/python/docs/writing-tests): Writing and executing basic test scripts.
+- [Trace Viewer](https://playwright.dev/python/docs/trace-viewer): Recording and analyzing test executions interactively.
+- [Test Generator](https://playwright.dev/python/docs/codegen): Generating test scripts automatically by recording actions.
+
+## Locators
+
+- [Locators Guide](https://playwright.dev/python/docs/locators): Finding elements on the page.
+- [Get By Role](https://playwright.dev/python/docs/api/class-page#page-get-by-role): Locating elements by accessibility roles.
+- [Get By Text](https://playwright.dev/python/docs/api/class-page#page-get-by-text): Finding elements containing specific text strings.
+- [Get By Label](https://playwright.dev/python/docs/api/class-page#page-get-by-label): Locating input controls by associated form labels.
+- [Get By Placeholder](https://playwright.dev/python/docs/api/class-page#page-get-by-placeholder): Locating inputs using placeholder attributes.
+- [Get By Test ID](https://playwright.dev/python/docs/api/class-page#page-get-by-test-id): Selecting elements with dedicated `data-testid` attributes.
+
+## Actionability & Assertions
+
+- [Actions Guide](https://playwright.dev/python/docs/input): Standard user actions like `click()`, `fill()`, `check()`, and `select_option()`.
+- [Assertions Guide](https://playwright.dev/python/docs/assertions): Creating reliable test assertions.
+- [Expect assertions](https://playwright.dev/python/docs/api/class-playwrightassertions): Detail of locator assertions (`to_be_visible()`, `to_have_value()`, `to_contain_text()`).
+
+## Contexts & Authentication
+
+- [Browser Contexts](https://playwright.dev/python/docs/browser-contexts): Running isolated browser sessions in parallel.
+- [Authentication](https://playwright.dev/python/docs/auth): Capturing and reusing sign-in state to avoid repetitive logins during testing.
+- [Network Interception](https://playwright.dev/python/docs/network): Mocking APIs, intercepting requests, and modifying server responses.
+
+## Async API
+
+- [Asynchronous execution](https://playwright.dev/python/docs/library): Using `async_playwright` and async-await flow for parallelized testing.

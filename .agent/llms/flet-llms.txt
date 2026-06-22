@@ -1,0 +1,43 @@
+# Flet UI Framework Documentation
+
+> Flet is a framework that enables developers to easily build real-time web, mobile, and desktop apps in Python. No frontend experience required. It uses Flutter under the hood.
+
+## Core Concepts
+
+- [Flet Guide](https://flet.dev/docs/): Complete documentation for Flet.
+- [App Structure](https://flet.dev/docs/guides/python/getting-started): Main application entry point (`ft.app(target=main)`) and the `Page` object.
+- [User Input](https://flet.dev/docs/guides/python/user-input): TextFields, Dropdowns, Checkboxes, and handling click/change events.
+- [Keyboard Shortcuts](https://flet.dev/docs/guides/python/keyboard-shortcuts): Registering global key events on the page.
+- [Large Lists](https://flet.dev/docs/guides/python/large-lists): Rendering large lists efficiently using `ListView` and `GridView`.
+
+## Layout Controls
+
+- [Row Control](https://flet.dev/docs/controls/row): Aligning controls horizontally.
+- [Column Control](https://flet.dev/docs/controls/column): Aligning controls vertically.
+- [Stack Control](https://flet.dev/docs/controls/stack): Overlaying controls on top of each other.
+- [Container Control](https://flet.dev/docs/controls/container): A box with styling, padding, margins, borders, and gradients.
+- [Card Control](https://flet.dev/docs/controls/card): Standard panel layout with rounded corners and elevation.
+
+## Navigation & Routing
+
+- [Navigation & Routing Guide](https://flet.dev/docs/guides/python/navigation-and-routing): Defining page routes and handling navigation.
+- [View Control](https://flet.dev/docs/controls/view): A navigation view representing a route layout.
+- [AppBar Control](https://flet.dev/docs/controls/appbar): Top navigation bar with titles, leading icons, and action menus.
+- [NavigationBar Control](https://flet.dev/docs/controls/navigationbar): Bottom navigation bar for tab switching.
+
+## Forms & Interactive Controls
+
+- [TextField Control](https://flet.dev/docs/controls/textfield): Single or multi-line text input fields.
+- [Dropdown Control](https://flet.dev/docs/controls/dropdown): Dropdown selector lists.
+- [Checkbox Control](https://flet.dev/docs/controls/checkbox): Boolean checkboxes.
+- [ElevatedButton Control](https://flet.dev/docs/controls/elevatedbutton): Primary styled buttons.
+- [IconButton Control](https://flet.dev/docs/controls/iconbutton): Flat buttons containing icons.
+
+## State Management
+
+- [State Management & Refs](https://flet.dev/docs/guides/python/rendering-views): Accessing controls without nested referencing using Flet's `Ref` paradigm.
+- [Page Update](https://flet.dev/docs/guides/python/getting-started#updating-ui): Re-rendering modified controls using `page.update()`.
+
+## Async Application
+
+- [Async Applications](https://flet.dev/docs/guides/python/async-apps): Writing asynchronous event handlers and using `asyncio` loop in Flet apps.

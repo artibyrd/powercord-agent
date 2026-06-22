@@ -1,0 +1,36 @@
+# SQLModel & SQLAlchemy Documentation
+
+> SQLModel is a library for interacting with SQL databases from Python code, with Python objects. It is designed to be intuitive, easy to use, highly compatible, and robust. It uses Pydantic and SQLAlchemy under the hood.
+
+## Core CRUD Operations
+
+- [SQLModel Tutorial](https://sqlmodel.tiangolo.com/tutorial/): Complete guide to SQLModel CRUD operations.
+- [First Steps](https://sqlmodel.tiangolo.com/tutorial/first-steps/): Defining models, creating tables, and establishing sessions.
+- [Create Data](https://sqlmodel.tiangolo.com/tutorial/insert/): Inserting records into tables.
+- [Read Data](https://sqlmodel.tiangolo.com/tutorial/select/): Selecting and querying records using `select()`.
+- [Where Filter](https://sqlmodel.tiangolo.com/tutorial/where/): Filtering query results using `where()`.
+- [Update Data](https://sqlmodel.tiangolo.com/tutorial/update/): Querying, modifying, and committing updates to records.
+- [Delete Data](https://sqlmodel.tiangolo.com/tutorial/delete/): Querying and deleting records from the database.
+
+## FastAPI Integration
+
+- [FastAPI with SQLModel](https://sqlmodel.tiangolo.com/tutorial/fastapi/): Best practices for integrating SQLModel into FastAPI.
+- [Session Dependency](https://sqlmodel.tiangolo.com/tutorial/fastapi/session/): Creating and injecting a database session dependency with `Depends`.
+- [Simple Hero API](https://sqlmodel.tiangolo.com/tutorial/fastapi/simple-hero-api/): Standard path operations using SQLModel CRUD in FastAPI.
+- [Multiple Models](https://sqlmodel.tiangolo.com/tutorial/fastapi/multiple-models/): Declaring separate schemas for base models, creation, reads, and updates.
+
+## Relationships & Joins
+
+- [Relationships Intro](https://sqlmodel.tiangolo.com/tutorial/relationship/): Linking models together using foreign keys and relationship links.
+- [Connect Models](https://sqlmodel.tiangolo.com/tutorial/relationship/connect-models/): Defining One-to-Many relationships with `Relationship` and `back_populates`.
+- [Back Populates](https://sqlmodel.tiangolo.com/tutorial/relationship/back-populates/): Understanding how `back_populates` synchronizes in-memory models.
+- [Read Relationship Data](https://sqlmodel.tiangolo.com/tutorial/relationship/read-relationships/): Fetching related models implicitly and performing joins.
+- [Joins and Select](https://sqlmodel.tiangolo.com/tutorial/relationship/joins/): Joining multiple tables using `select().join()`.
+- [Many-to-Many Relationships](https://sqlmodel.tiangolo.com/tutorial/relationship/many-to-many/): Setting up link models and configuring many-to-many links.
+
+## SQLAlchemy Core Reference
+
+- [SQLAlchemy 2.0 Unified Tutorial](https://docs.sqlalchemy.org/en/20/tutorial/index.html): Standard SQLAlchemy API reference.
+- [Selecting Rows](https://docs.sqlalchemy.org/en/20/tutorial/data_select.html): Detailed SELECT structure, limits, offsets, order_by, and group_by.
+- [Inserting, Updating, Deleting Rows](https://docs.sqlalchemy.org/en/20/tutorial/data_update.html): Executing DML statements natively.
+- [Alembic Migrations](https://alembic.jpaweb.com/en/latest/tutorial.html): Scaffolding and running migrations.
