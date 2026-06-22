@@ -164,4 +164,6 @@ Rules 1–6 use this boundary to decide which roles to scrutinise.
 6. **Separator edge** — a role at exactly the separator position is **staff**, not non-staff.
 7. **Widget Count Assertions in Tests** — Registering new widgets (e.g. `guild_admin_security_overrides_widget`, total `9` default widgets) requires updating the exact assertions in `test_dashboard_page.py` and `test_dashboard_page_stress.py` to prevent failing test suites.
 8. **Honeypot Rule Interference in Tests** — When testing other security rules in isolation, Rule 7 will fire a low-severity alert if the `"honeypot"` extension is not enabled. Always insert an enabled `GuildExtensionSettings` row for `"honeypot"` to isolate specific rule behaviors.
+9. **Database Transaction Aborts (PostgreSQL/SQLAlchemy)** — Catching an exception from a failed query (e.g. querying a non-existent `honeypot_channels` table when the extension is not active) is not enough. PostgreSQL aborts the entire transaction upon failure. Any subsequent query on that session will fail with `25P02: current transaction is aborted` unless the session is explicitly rolled back (`session.rollback()`). Always verify table existence using `inspect(bind).has_table()` before executing queries that might fail due to schema mismatches, and always execute a rollback in the exception block.
+
 
