@@ -109,6 +109,10 @@ Extensions can run tests independently of the main server checkout:
 - Use the standalone testing setup described above when working outside the
   monorepo.
 
+### FastHTML Component Tests
+
+- When asserting HTML output or rendering components in unit tests, always use `to_xml(response)` from `fasthtml.common` instead of `str(response)`. `to_xml` ensures tags and child nodes are fully compiled, preventing false negatives in assertions.
+
 ## Mocking Requirements
 
 - **All loopback HTTP requests must be fully mocked** — this includes bot API
@@ -142,3 +146,4 @@ deterministic and testable without sleeps or time manipulation.
 | Missing DB teardown in fixtures | Leaks state between tests | Always clean up rows + dispose engine |
 | Skipping `NullPool` | Connections leak across tests | Always set `poolclass=NullPool` |
 | Un-mocked HTTP to bot/sprocket API | Tests break without network, or hit prod | Fully mock all loopback HTTP |
+| Running tests concurrently | Causes connection pool starvation, deadlocks, and pg8000 `28P01` credential failures | Never run multiple pytest runs concurrently. Run `python kill_stale_tests.py` to kill orphaned test processes. |
