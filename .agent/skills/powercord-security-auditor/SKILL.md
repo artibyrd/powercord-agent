@@ -13,14 +13,16 @@ description: >
 The Security Auditor is a subsystem of the **utilities** extension that
 continuously evaluates a Discord guild's role and channel configuration
 against eight security rules, producing a 0–100 score and categorised alerts.
+It also supports an overrides subsystem allowing administrators to dismiss
+active alerts with optional justification comments.
 
 ## When to Use
 
 - Adding or modifying a `SecurityRule`
 - Changing permission bitmask logic or effective-permission computation
-- Updating audit REST endpoints or dashboard widgets
-- Debugging false-positive / false-negative alerts
-- Writing or fixing tests for the rule engine
+- Updating audit REST endpoints, override actions, or dashboard widgets
+- Debugging false-positive / false-negative alerts or overrides
+- Writing or fixing tests for the rule engine or overrides workflow
 
 ## Architecture
 
@@ -28,16 +30,28 @@ against eight security rules, producing a 0–100 score and categorised alerts.
 DB Models (app/db/models.py)
   ├─ DiscordAuditorConfig   → staff_separator_role_id, staff_channel_ids[], announcement_channel_ids[]
   ├─ DiscordRole            → name, position, managed, mentionable, permissions (bitmask)
-  └─ DiscordChannel         → name, type, category_parent_id, permission_overwrites[]
+  ├─ DiscordChannel         → name, type, category_parent_id, permission_overwrites[]
+  └─ SecurityAlertOverride  → guild_id, alert_hash, rule, category, message, comment
         │
         ▼
 Rule Engine (app/extensions/utilities/widget.py)
-  └─ executes SecurityRule checks against cached DB data
+  └─ executes SecurityRule checks against cached DB data, filtering out active overrides
         │
         ▼
-REST API (app/extensions/utilities/routes.py)
-  └─ /api/guild/{guild_id}/audit/*
+REST API & UI (app/ui/dashboard.py / app/extensions/utilities/routes.py)
+  ├─ /api/guild/{guild_id}/audit/*
+  ├─ GET  /dashboard/{guild_id}/alerts/override-confirm  → Render override justification modal
+  ├─ POST /dashboard/{guild_id}/alerts/override           → Create alert override
+  └─ POST /dashboard/{guild_id}/alerts/override/remove    → Remove alert override
 ```
+
+## Security Alert Overrides
+
+Administrators can override specific active security alerts to hide them and restore their score penalty.
+- **Identification:** Alerts are identified using a unique `alert_hash` computed as:
+  `SHA-256(rule + ":" + category + ":" + message)`
+- **Engine Logic:** `SecurityRuleEngine.evaluate` queries existing overrides and excludes them from active alerts and score calculations, unless `include_overridden=True` is specified.
+- **Purge Lifecycle:** Overrides are automatically deleted when a guild's data is reset/purged via the utilities extension lifecycle hook.
 
 ## Permission Bitmask Reference
 
@@ -105,8 +119,8 @@ REST API (app/extensions/utilities/routes.py)
 Score = max(0, 100 - (15 × N_high + 10 × N_medium + 5 × N_low))
 ```
 
-- Each **distinct alert** (not each affected entity) counts once per severity.
-- A score of 100 means zero alerts.
+- Each **distinct active, non-overridden alert** (not each affected entity) counts once per severity.
+- A score of 100 means zero active alerts.
 
 ## REST API Endpoints
 
@@ -148,3 +162,6 @@ Rules 1–6 use this boundary to decide which roles to scrutinise.
 4. **Administrator bypass** — `1 << 3` grants all permissions; don't flag channel-level leaks for admin roles.
 5. **Managed vs. unmanaged** — Rule 6 only applies to unmanaged roles; Rule 8 only applies to managed (bot) roles.
 6. **Separator edge** — a role at exactly the separator position is **staff**, not non-staff.
+7. **Widget Count Assertions in Tests** — Registering new widgets (e.g. `guild_admin_security_overrides_widget`, total `9` default widgets) requires updating the exact assertions in `test_dashboard_page.py` and `test_dashboard_page_stress.py` to prevent failing test suites.
+8. **Honeypot Rule Interference in Tests** — When testing other security rules in isolation, Rule 7 will fire a low-severity alert if the `"honeypot"` extension is not enabled. Always insert an enabled `GuildExtensionSettings` row for `"honeypot"` to isolate specific rule behaviors.
+
