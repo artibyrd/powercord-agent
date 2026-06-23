@@ -42,15 +42,14 @@ User:  (must explicitly confirm)
 
 **If the user does not confirm, STOP HERE. Do not continue.**
 
-### 2. Verify Upstream Cleanliness
+### 2. Verify Downstream Cleanliness
 
-Ensure the upstream framework and all extension repos have a clean working tree
-with no uncommitted changes:
+Ensure the downstream deployment server and all extension repos have a clean working tree with no uncommitted changes:
 
 ```bash
-cd "../powercord"
+cd "../powercord-downstream-server"
 
-echo "=== Checking powercord/ ==="
+echo "=== Checking powercord-downstream-server/ ==="
 git status
 # Expected: nothing to commit, working tree clean
 
@@ -70,11 +69,10 @@ changes, commit or stash them before proceeding.
 
 ### 3. Run Full QA Suite
 
-Run the complete QA suite in the upstream repository to catch lint errors,
-formatting issues, type-check failures, and test regressions:
+Run the complete QA suite in the downstream repository to catch lint errors, formatting issues, type-check failures, and test regressions:
 
 ```bash
-cd "../powercord"
+cd "../powercord-downstream-server"
 just qa
 ```
 
@@ -113,14 +111,14 @@ Expected: Each extension shows a recent commit and is in sync with its remote
 Deploy to production via GCP Cloud Build:
 
 ```bash
-cd "../powercord"
+cd "../powercord-downstream-server"
 just gcp-build
 ```
 
 This command submits a Cloud Build that:
 1. Builds the production Docker image
-2. Pushes it to the container registry
-3. Deploys the new image to the production Cloud Run service
+2. Pushes it to the Artifact Registry
+3. Automatically deploys the new image to the production Compute Engine VM (`powercord-instance`) via Terraform and resets the instance.
 
 The build typically takes 3–5 minutes.
 
@@ -129,7 +127,7 @@ The build typically takes 3–5 minutes.
 Monitor the Cloud Build logs to track deployment progress:
 
 ```bash
-cd "../powercord"
+cd "../powercord-downstream-server"
 
 # Check the latest Cloud Build status
 gcloud builds list --limit=1 --format="table(id,status,startTime,duration)"
@@ -143,42 +141,39 @@ If the build fails, inspect the logs for errors before re-attempting.
 
 ### 7. Post-Deployment Verification
 
-Verify the production container is running with the new image:
+Verify the production container is running with the new image on the Compute Engine instance:
 
 ```bash
-# Check the Cloud Run service status
-gcloud run services describe powercord --region=us-central1 \
-    --format="table(status.url,status.conditions.type,status.conditions.status)"
+# Check the VM instance status
+gcloud compute instances describe powercord-instance --zone us-central1-a --format="value(status)"
 
-# Check recent logs for successful startup
-gcloud run services logs read powercord --region=us-central1 --limit=20
+# SSH into the instance and list running containers
+gcloud compute ssh powercord-instance --zone us-central1-a --command "docker ps"
+
+# Stream docker logs from the powercord container to verify successful startup
+gcloud compute ssh powercord-instance --zone us-central1-a --command "docker logs --tail 50 \$(docker ps -q -f name=klt-powercord)"
 ```
 
-Expected: The service shows `Ready: True` and logs contain
-`Application startup complete.` with no error traces.
+Expected: The VM status is `RUNNING`, the Docker container is active, and logs contain `Database initialized.` and supervisord starting all services without crash traces.
 
 ### 8. Smoke Test
 
-Verify the deployed application is responding correctly:
+Verify the deployed application is responding correctly (replace `<external-ip-or-domain>` with the actual IP/domain of the VM):
 
 ```bash
-# Get the production URL
-PROD_URL=$(gcloud run services describe powercord --region=us-central1 \
-    --format="value(status.url)")
+PROD_URL="http://<external-ip-or-domain>"
 
 # Health check endpoint
 echo "→ Health check:"
-curl -s -o /dev/null -w "HTTP %{http_code}" "$PROD_URL/health"
-echo ""
+curl -s -o /dev/null -w "HTTP %{http_code}\n" "$PROD_URL/api/health"
 
 # API root endpoint
 echo "→ API root:"
-curl -s -o /dev/null -w "HTTP %{http_code}" "$PROD_URL/api"
-echo ""
+curl -s -o /dev/null -w "HTTP %{http_code}\n" "$PROD_URL/api"
 
 # Dashboard load check
 echo "→ Dashboard:"
-curl -s -o /dev/null -w "HTTP %{http_code}" "$PROD_URL/"
+curl -s -o /dev/null -w "HTTP %{http_code}\n" "$PROD_URL/"
 echo ""
 ```
 

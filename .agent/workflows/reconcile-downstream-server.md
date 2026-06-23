@@ -105,8 +105,25 @@ git status
 just ext-list
 ```
 
-Expected: `git status` reports `nothing to commit, working tree clean` (gitignored
-extension directories will not appear). `ext-list` shows all expected extensions.
+Expected: `git status` reports `nothing to commit, working tree clean` (gitignored extension directories will not appear). `ext-list` shows all expected extensions.
+
+### 5b. Verify Migration Graph & Dependencies
+
+Verify that all extension dependencies were successfully installed and that the Alembic migration config is fully updated:
+
+```bash
+cd "../powercord-downstream-server"
+
+# Run database migrations to auto-generate/verify the config
+just db-upgrade
+
+# Print migration heads to confirm extension paths are registered
+poetry run alembic heads
+```
+
+Expected:
+- `poetry.lock` and `pyproject.toml` should show modified status in `git status` if any dependencies had been lost and restored.
+- `alembic heads` lists all three migration heads: `0caed23d30a5 (head)`, `honey0001 (head)`, and `midi0002 (head)`.
 
 ### 6. Rebuild Containers (If Running)
 
