@@ -53,6 +53,7 @@ graph TD
 * **`.agent/`**: 
   * **`skills/`**: Customized domain-specific knowledge bases and scripts (e.g. `powercord-ecosystem` for core and extensions, `powercord-gcp-operations` for VMs).
   * **`workflows/`**: Step-by-step procedures for deployment and testing (e.g. `fresh-install-downstream-server.md` and client equivalents).
+  * **`llms/`**: Curated documentation maps to give large language models (LLMs) and AI coding assistants better context.
 
 ---
 
@@ -92,3 +93,17 @@ To automatically create the required symlinks, run the setup script from the roo
 # Link only to sub-repositories
 ./powercord-agent/setup.sh repos
 ```
+
+---
+
+## LLMS Files
+
+To give large language models (LLMs) and AI coding assistants better context, we include curated documentation maps under the shared `.agent/llms/` directory:
+
+- **[Discord API Guide](.agent/llms/discord-llms.txt)**: Core Discord Developer platform guides and interactions.
+- **[FastHTML](.agent/llms/fasthtml-llms.txt)**: Dynamic Python-based HTML layout and routing guidelines.
+- **[Pydantic](.agent/llms/pydantic-llms-full.txt)**: Data validation and model settings reference.
+- **[FastAPI](.agent/llms/fastapi-llms.txt)**: Dependency injection, APIRouter structures, and REST patterns.
+- **[SQLModel & SQLAlchemy](.agent/llms/sqlmodel-llms.txt)**: Database schemas, models, relationships, and queries.
+- **[Flet UI](.agent/llms/flet-llms.txt)**: Desktop client UI layouts, controls, page states, and event handling.
+- **[Playwright](.agent/llms/playwright-llms.txt)**: Browser testing and E2E automation actions and assertions.
