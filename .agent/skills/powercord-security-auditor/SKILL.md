@@ -28,7 +28,7 @@ active alerts with optional justification comments.
 
 ```
 DB Models (app/db/models.py)
-  ├─ DiscordAuditorConfig   → staff_separator_role_id, staff_channel_ids[], announcement_channel_ids[]
+  ├─ DiscordAuditorConfig   → staff_separator_role_id (lowest admin role), staff_channel_ids[], announcement_channel_ids[]
   ├─ DiscordRole            → name, position, managed, mentionable, permissions (bitmask)
   ├─ DiscordChannel         → name, type, category_parent_id, permission_overwrites[]
   └─ SecurityAlertOverride  → guild_id, alert_hash, rule, category, message, comment
@@ -95,8 +95,8 @@ Administrators can override specific active security alerts to hide them and res
 
 ### 5. Low-Tier Role Privileges
 - **Category:** roles | **Severity:** High
-- **Condition:** A role **below** the staff separator has any of: Administrator, Manage Server, Manage Roles, Manage Channels, Kick Members, Ban Members, Mention Everyone.
-- **Remediation:** Remove dangerous permissions from roles below the separator or move the role above it.
+- **Condition:** A non-admin role (below the lowest admin role) has any of: Administrator, Manage Server, Manage Roles, Manage Channels, Kick Members, Ban Members, Mention Everyone.
+- **Remediation:** Remove dangerous permissions from non-admin roles or promote the role above the lowest admin role.
 
 ### 6. General Role Mentionability
 - **Category:** pings | **Severity:** Low
@@ -129,7 +129,7 @@ Score = max(0, 100 - (15 × N_high + 10 × N_medium + 5 × N_low))
 | GET | `/api/guild/{guild_id}/audit/score` | Current score + alert counts |
 | GET | `/api/guild/{guild_id}/audit/alerts?category=` | Filtered alert list (category: exposure, pings, roles, integrations) |
 | GET | `/api/guild/{guild_id}/audit/config` | Current `DiscordAuditorConfig` |
-| POST | `/api/guild/{guild_id}/audit/config` | Update config (separator, staff/announcement channel IDs) |
+| POST | `/api/guild/{guild_id}/audit/config` | Update config (lowest admin role, staff/announcement channel IDs) |
 
 ## Effective Permission Computation
 
@@ -139,13 +139,13 @@ Score = max(0, 100 - (15 × N_high + 10 × N_medium + 5 × N_low))
 4. Apply **channel** overwrites (allow/deny) for the role — these override category.
 5. Use `get_effective_channel_permissions(role, channel)` which handles parent inheritance.
 
-## Staff Separator Concept
+## Lowest Admin Role Concept
 
-A designated role (`staff_separator_role_id`) divides the role hierarchy:
-- Roles **at or above** the separator's `position` → staff.
-- Roles **below** → non-staff (community / public).
+A designated role (`staff_separator_role_id`) defines the admin boundary in the role hierarchy:
+- This role and all roles **at or above** its `position` → admin.
+- Roles **below** → non-admin (community / public).
 
-Rules 1–6 use this boundary to decide which roles to scrutinise.
+Rules 1–6 use this lowest admin role boundary to decide which roles to scrutinise.
 
 ## Testing Security Rules
 
@@ -161,7 +161,7 @@ Rules 1–6 use this boundary to decide which roles to scrutinise.
 3. **Double-counting alerts** — one rule instance = one alert, even if multiple roles are affected.
 4. **Administrator bypass** — `1 << 3` grants all permissions; don't flag channel-level leaks for admin roles.
 5. **Managed vs. unmanaged** — Rule 6 only applies to unmanaged roles; Rule 8 only applies to managed (bot) roles.
-6. **Separator edge** — a role at exactly the separator position is **staff**, not non-staff.
+6. **Admin boundary edge** — a role at exactly the lowest admin role position is **admin**, not non-admin.
 7. **Widget Count Assertions in Tests** — Registering new widgets (e.g. `guild_admin_security_overrides_widget`, total `9` default widgets) requires updating the exact assertions in `test_dashboard_page.py` and `test_dashboard_page_stress.py` to prevent failing test suites.
 8. **Honeypot Rule Interference in Tests** — When testing other security rules in isolation, Rule 7 will fire a low-severity alert if the `"honeypot"` extension is not enabled. Always insert an enabled `GuildExtensionSettings` row for `"honeypot"` to isolate specific rule behaviors.
 9. **Database Transaction Aborts (PostgreSQL/SQLAlchemy)** — Catching an exception from a failed query (e.g. querying a non-existent `honeypot_channels` table when the extension is not active) is not enough. PostgreSQL aborts the entire transaction upon failure. Any subsequent query on that session will fail with `25P02: current transaction is aborted` unless the session is explicitly rolled back (`session.rollback()`). Always verify table existence using `inspect(bind).has_table()` before executing queries that might fail due to schema mismatches, and always execute a rollback in the exception block.
