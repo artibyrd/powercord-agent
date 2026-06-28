@@ -114,8 +114,8 @@ Verify that all extension dependencies were successfully installed and that the 
 ```bash
 cd "../powercord-downstream-server"
 
-# Run database migrations to auto-generate/verify the config (override password if using standard dev db container)
-POWERCORD_POSTGRES_PASSWORD=test_pass just db-upgrade
+# Run database migrations to auto-generate/verify the config (uses credentials configured in .env)
+just db-upgrade
 
 # Print migration heads to confirm extension paths are registered
 poetry run alembic heads
