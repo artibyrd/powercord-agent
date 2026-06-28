@@ -116,10 +116,10 @@ Administrators can override specific active security alerts to hide them and res
 ## Scoring Mechanism
 
 ```
-Score = max(0, 100 - (15 × N_high + 10 × N_medium + 5 × N_low))
+Score = max(0, 100 - round(15 × log2(N_high + 1) + 10 × log2(N_medium + 1) + 5 × log2(N_low + 1)))
 ```
 
-- Each **distinct active, non-overridden alert** (not each affected entity) counts once per severity.
+- Each **distinct active, non-overridden alert** counts towards its severity count (with diminishing returns).
 - A score of 100 means zero active alerts.
 
 ## REST API Endpoints
