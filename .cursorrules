@@ -97,6 +97,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   * **Dynamic Modal Backdrops**: Since dynamic HTMX-injected `<dialog>` elements bypass the native `.showModal()` backdrop trigger, always style the close-trigger form backdrop container with explicit background dimming and blur classes (e.g., `modal-backdrop bg-black/60 backdrop-blur-sm`) to guarantee visual depth.
   * **Interactive Active Tabs**: Active tabs in tab groups should always scale up, receive depth, and rise above siblings. Standardize on the following class layout for active tabs: `tab-active !bg-primary !text-primary-content font-extrabold shadow-xl shadow-primary/40 scale-[1.05] border border-primary/30 z-10`.
   * **FastHTML Test Assertions**: When asserting HTML output or rendering components in unit tests, always use `to_xml(response)` from `fasthtml.common` instead of `str(response)`. `to_xml` ensures tags and child nodes are fully compiled, preventing false negatives in assertions.
+  * **Mock Schema Matching**: When mocking security rules or evaluation outputs in API route tests (e.g., `test_get_alerts_list`), always include core schema keys (specifically `alert_hash`, `parent_hash`, `parent_rule`, `category`, and `severity`) in the mock dictionaries to prevent `KeyError` crashes in UI components and active-hash filtering.
 
 ---
 
