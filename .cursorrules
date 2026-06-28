@@ -39,9 +39,11 @@ These rules define strict guidelines for AI agents working on the Powercord proj
 * **Agent Directory Naming Convention**: Prevent conflation between agent configuration and runtime directories:
   * `.agent/` (singular): Reserved for symlinked/static project workflow specifications, skills, and configuration parameters.
   * `.agents/` (plural): Reserved for runtime agent operations, workspace traces, and temporary logs. This directory must be kept untracked and explicitly ignored in `.gitignore`.
-* **Uncommitted Upstream Changes**: Before running `init-target` downstream or initiating downstream setup scripts, ensure all upstream code changes are fully committed. Downstream setup tasks use `git clone` to copy upstream, meaning unstaged or uncommitted upstream modifications will be ignored, leading to mismatched behavior.
-* **Source vs. Downstream Edits**: While testing must be executed in downstream testbeds (e.g., `powercord-downstream-server`), any code modifications meant to be persisted (such as framework logic, `cloudbuild.yaml`, and extension code) must be authored directly in their respective source repositories (`powercord` or `powercord-extensions/<ext>`) and then synced downstream via `/reconcile-downstream-server`, rather than edited directly in the downstream directories. **Verification**: Before ending a session, run `git status` in `powercord-downstream-server` — if it shows modified tracked files, those edits were made in the wrong place. Discard them and re-apply in the upstream repo.
-* **Post-Commit Downstream Reconciliation**: After committing changes to upstream repositories (`powercord` or `powercord-extensions/*`), always reconcile the downstream deployment to prevent drift accumulation. Run the `/reconcile-downstream-server` workflow, which discards local modifications, pulls upstream commits, and re-installs extensions. Never leave a session with the downstream repo in a dirty state relative to committed upstream changes.
+* **Strict Git Commit Prohibition for Agents**: Agents and subagents must NEVER execute `git commit` in any repository. This command is strictly reserved for the human reviewer.
+* **Core Verification Gating**: During active development, agents must verify all core backend modifications by running the unit and integration test suite directly within the upstream repository (`powercord/`) using `poetry run pytest`.
+* **No Downstream Sync During Active Development**: Do not attempt to synchronize core framework changes to the downstream server (`powercord-downstream-server`) during active development. The downstream repository is a deployment target and must only be modified via the official workflows (e.g. `/reconcile-downstream-server`) *after* the human reviewer has approved and committed the upstream changes.
+* **Human-Managed Downstream Reconciliation**: Once the human reviewer approves and commits the upstream changes, they (or the agent under explicit direction) will execute the `/reconcile-downstream-server` workflow to sync the downstream target with the newly committed upstream history.
+
 * **Amended Upstream History Reconciliation**: If the upstream repository (`powercord/`) history is amended, rebased, or force-pushed, a standard `git pull` in the downstream target will fail due to history divergence. To resolve this cleanly, fetch the latest branches and hard-reset the downstream HEAD to match:
   ```bash
   git fetch origin
@@ -49,6 +51,7 @@ These rules define strict guidelines for AI agents working on the Powercord proj
   git clean -fd
   ```
 * **Pre-Commit Linting & Formatting**: Before presenting changes for human review, run `poetry run ruff check --fix . && poetry run ruff format .` in the source repository to ensure compliance with style checks and avoid breaking CI/CD or downstream test builds. This applies to `powercord/`, each `powercord-extensions/<ext>/`, and `powercord-client/`.
+
 
 ---
 
