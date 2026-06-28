@@ -117,7 +117,8 @@ def setup(bot: commands.Bot):
 
 Sprockets are FastAPI `APIRouter` instances. The inspector looks for
 `APIRouter()` calls. Routes are auto-mounted at `/api/<extension_name>/...`
-with `api_scope_required(extension_name)` middleware applied.
+but sprocket authors MUST explicitly apply `Depends(api_scope_required(extension_name, level))`
+to each endpoint to secure it, as the auto-applied middleware has been removed from `load_sprockets()`.
 
 ```python
 from fastapi import APIRouter, Depends
@@ -125,7 +126,7 @@ from app.common.auth import api_scope_required
 
 router = APIRouter()
 
-@router.get("/status")
+@router.get("/status", dependencies=[Depends(api_scope_required("my_extension", level="user"))])
 async def get_status():
     """GET /api/my_extension/status"""
     return {"ok": True}
@@ -306,7 +307,7 @@ async def test_cog_hello(bot, guild):
 |---|---|
 | `Card(content, title)` arg order | `Card(title, content, **kwargs)` — title is always first |
 | DaisyUI tooltip via `title=` attr | Use `cls='tooltip tooltip-top'` + `data_tip='...'` |
-| Sprocket missing auth middleware | `api_scope_required(extension_name)` is auto-applied; don't double-wrap |
+| Sprocket missing auth middleware | Sprocket authors MUST explicitly apply `Depends(api_scope_required(extension_name, level))` to secure each endpoint |
 | Forgetting `register_routes(rt)` | Routes file is silently ignored without this callback |
 | `PUBLIC_PATHS` not a module-level list | Must be a top-level `list[str]` in `routes.py` |
 | Migration not detected | Ensure `has_migrations: true` and `latest_migration_version` are set |
