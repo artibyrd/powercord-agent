@@ -53,6 +53,40 @@ The following are the current explicit, required dependency bounds for key compo
 | HTTPX | `>=0.28.1, <0.29.0`| Synchronous and async HTTP client for server communication |
 | Pydantic | `>=2.12.5, <3.0.0`| Data validation and serialization for UI models |
 
+## Auth Architecture
+
+Powercord uses a dual-layer authentication system:
+
+### UI Server (FastHTML)
+- **Beforeware** (`auth_before` in `auth.py`): Global session-based auth
+  gate applied to all routes except those in the `Beforeware.skip` list
+  (core paths like `/login`, `/logout`, `/dev/login`, plus extension
+  `PUBLIC_PATHS`).
+- **Login flow**: Discord OAuth → `discord_callback` → `get_admin_guilds()`
+  verifies dashboard access → session populated → redirect to `/profile`.
+- **`get_admin_guilds()`** (`helpers.py`): The **single source of truth**
+  for authorization. Checks Discord Administrator permission,
+  `DashboardAccessRole`, and `ApiUserRole`. Used by both the login
+  callback and the post-login `auth_before` middleware.
+- **`@require_admin`** (`main_ui.py`): Defense-in-depth decorator on
+  `/admin/*` route handlers. Calls `is_dashboard_admin()` to verify the
+  session user is a global admin. Preserves `__signature__` for FastHTML
+  parameter injection compatibility.
+- **Nav visibility**: `_check_admin_for_nav()` in `page.py` does a live
+  DB lookup via `is_dashboard_admin()` — not cached session data.
+
+### API Server (FastAPI)
+- **Token-based auth**: `get_current_api_user` dependency resolves
+  Bearer tokens via SHA-256 hashed DB lookup.
+- **Scope-based gating**: `api_scope_required(extension, level)`
+  dependency generator checks scopes hierarchically (`global.admin` >
+  `core.admin` > `{guild_id}.{ext}.admin`, etc.).
+- **Internal system key**: Bot-to-API key (`system_internal`) uses a
+  plaintext fast-path comparison, mapped to `global.admin` permissions.
+
+**Key invariant**: The login gate and post-login authorization **must**
+use the same access criteria — both delegate to `get_admin_guilds()`.
+
 ## Development Workflow: Source Isolation
 
 **CRITICAL RULE:** Never run, test, instantiate `.env` files, or build databases directly within the source repository directories.

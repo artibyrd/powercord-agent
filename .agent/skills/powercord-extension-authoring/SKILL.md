@@ -184,6 +184,29 @@ def register_routes(rt):
         return Titled("Public", P("No login required."))
 ```
 
+#### Route Authentication & Authorization
+
+Extension routes registered via `register_routes(rt)` are automatically
+protected by the core `Beforeware` (session-based auth). However:
+
+- **Public routes** that should be accessible without login must declare
+  a `PUBLIC_PATHS` constant at module level (see `discovery.md`). The
+  core framework dynamically extends the `Beforeware.skip` list from
+  these declarations at startup.
+- **Admin-only mutation routes** in the core framework use the
+  `@require_admin` decorator (defined in `main_ui.py`) for
+  defense-in-depth. Extensions with admin routes in `routes.py` should
+  implement similar guards using `is_dashboard_admin()` from
+  `app.ui.helpers`.
+- **Guild-level access** is checked via `_check_guild_admin()` in
+  `dashboard.py`, which verifies the user has admin permissions on the
+  specific guild via Discord Admin perms, `DashboardAccessRole`, or
+  `ApiUserRole`.
+- **FastHTML decorators** must preserve `__signature__` using
+  `inspect.signature(f)` — see `.cursorrules` Section 5 for the
+  pattern. Without this, FastHTML's parameter injector silently stops
+  resolving `req`, `sess`, and path parameters.
+
 ### Blueprint (`blueprint.py`)
 
 Blueprints hold shared SQLAlchemy models, helpers, or constants used across

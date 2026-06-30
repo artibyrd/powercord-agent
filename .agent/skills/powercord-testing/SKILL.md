@@ -113,6 +113,29 @@ Extensions can run tests independently of the main server checkout:
 
 - When asserting HTML output or rendering components in unit tests, always use `to_xml(response)` from `fasthtml.common` instead of `str(response)`. `to_xml` ensures tags and child nodes are fully compiled, preventing false negatives in assertions.
 
+### Auth & Session Mocking Patterns
+
+- **Session dicts**: FastHTML injects `sess` as a plain `dict`. Mock it
+  as `sess = {"auth": {"id": "123", "username": "testuser", ...}}`.
+- **`is_dashboard_admin`**: Patch at `app.ui.helpers.is_dashboard_admin`
+  (it's the source module). Returns `bool`.
+- **`get_admin_guilds`**: Patch at `app.ui.helpers.get_admin_guilds`
+  with `new_callable=AsyncMock`. Returns a dict of guild data (empty
+  dict = no access).
+- **Discord OAuth callback**: Mock `httpx.AsyncClient` for token
+  exchange and user info, then mock `get_admin_guilds` to control
+  access decisions. See `test_discord_callback_role_based_access` in
+  `tests/unit/test_auth.py` for the canonical pattern.
+- **`@require_admin` decorator tests**: Import the decorated handler
+  directly (e.g., `from app.main_ui import add_admin_route`) and call
+  it with `sess={}` to test the deny path, or with a valid auth dict
+  and a mocked `is_dashboard_admin` returning `True` for the allow
+  path. Use `to_xml(result)` to assert on the HTML output.
+- **Local import mock paths**: Functions that use `from x.y import z`
+  inside the function body (common in UI layer to avoid circular
+  imports) must be patched at the source module (`app.ui.helpers.z`),
+  not the calling module (`app.ui.auth.z`).
+
 ## Mocking Requirements
 
 - **All loopback HTTP requests must be fully mocked** — this includes bot API
