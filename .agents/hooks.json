@@ -1,0 +1,39 @@
+{
+  "git-safety-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .agents/hooks/guard_command.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "auto-python-formatter": {
+    "PostToolUse": [
+      {
+        "matcher": "replace_file_content|write_to_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .agents/hooks/auto_format.py",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "workspace-cleanliness-guard": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 .agents/hooks/check_workspace_clean.py",
+        "timeout": 10
+      }
+    ]
+  }
+}

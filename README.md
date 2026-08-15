@@ -1,109 +1,81 @@
-# Powercord Agent Guidelines & Guardrails
+# Powercord Agent & Antigravity Developer Kit
 
-This repository houses the centralized agent instructions, custom skills, and execution workflows for the **Powercord Ecosystem** (Core backend server, desktop client app, server-side cogs, and companion client-side extensions).
-
-Centralizing these files in this repository prevents duplication and ensures that all agent interactions across the different projects remain normalized and secure.
+This repository houses the centralized **Google Antigravity 2.0** customization architecture, custom skills, modular domain rules, and deterministic lifecycle hooks for the entire **Powercord Ecosystem** (Core backend server, companion desktop client, server cogs/sprockets, and companion client extensions).
 
 ---
 
-## Workspace Visualization
-
-Here is the simplified folder hierarchy of the multi-repository Powercord ecosystem and how the setup script symlinks `.cursorrules` and `.agent/` from `powercord-agent` (the Source of Truth) to the rest of the workspace:
+## 1. Antigravity Architecture Overview
 
 ```mermaid
 graph TD
-    %% Define Styles
-    classDef source fill:#2ecc71,stroke:#27ae60,stroke-width:2px,color:#fff;
-    classDef target fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff;
-
-    subgraph Workspace ["Workspace Parent: powercord-ecosystem/"]
+    subgraph Antigravity ["Google Antigravity Developer Kit"]
         direction TB
 
-        %% Source of Truth
-        Agent["powercord-agent/<br>(Source of Truth)"]:::source
+        AGENTS["AGENTS.md<br/>(Universal Invariants)"]
         
-        %% Target Directories
-        Root["[Workspace Root Parent]"]:::target
-        Core["powercord/"]:::target
-        Client["powercord-client/"]:::target
-        Downstream["powercord-downstream-server/"]:::target
-        
-        subgraph Nested ["Nested Extension Folders"]
-            CliExt["powercord-client-extensions/midi_library_client/"]:::target
-            MidiSrv["powercord-extensions/midi_library/"]:::target
-            Honey["powercord-extensions/honeypot/"]:::target
+        subgraph AgentsDir [".agents/"]
+            RULES["rules/<br/>• git-workflow.md<br/>• split-stack-architecture.md<br/>• database-testing.md<br/>• security-permissions.md<br/>• fasthtml-daisyui.md<br/>• flet-client.md"]
+            SKILLS["skills/<br/>• powercord-ecosystem<br/>• powercord-database-operations<br/>• powercord-testing<br/>• powercord-extension-authoring<br/>• powercord-security-auditor<br/>• powercord-client-development<br/>• powercord-deployment<br/>• powercord-gcp-operations"]
+            HOOKS["hooks.json & hooks/<br/>• PreToolUse: block git commit<br/>• PostToolUse: auto ruff format<br/>• Stop: check workspace hygiene"]
+            MCP["mcp_config.json<br/>• PostgreSQL DB Inspector (port 5433)"]
+            WF["workflows/<br/>• reconcile-downstream-server<br/>• fresh-install-downstream-server<br/>• deploy-production<br/>• audit-workflows"]
         end
+
+        PLUGIN["plugin.json<br/>(powercord-developer-kit)"]
     end
 
-    %% Symlink distribution
-    Agent ===>|setup.sh workspace| Root
-    Agent -.->|link: ../| Core
-    Agent -.->|link: ../| Client
-    Agent -.->|link: ../| Downstream
-    Agent -.->|link: ../../| CliExt
-    Agent -.->|link: ../../| MidiSrv
-    Agent -.->|link: ../../| Honey
+    AGENTS --- AgentsDir
+    AgentsDir --- PLUGIN
 ```
 
 ---
 
-## Repository Contents
+## 2. Directory Layout & Customization Structure
 
-* **`.cursorrules`**: The global custom guardrails for AI coding assistants. Covers agent behaviors, communication norms, Git workflow rules, environment safety configurations, and architectural split-stack design principles.
-* **`.agent/`**: 
-  * **`skills/`**: Customized domain-specific knowledge bases and scripts (e.g. `powercord-ecosystem` for core and extensions, `powercord-gcp-operations` for VMs).
-  * **`workflows/`**: Step-by-step procedures for deployment and testing (e.g. `fresh-install-downstream-server.md` and client equivalents).
-  * **`llms/`**: Curated documentation maps to give large language models (LLMs) and AI coding assistants better context.
+* **`AGENTS.md`**: Universal workspace invariant guardrails:
+  * Strict prohibition of autonomous `git commit` by AI agents.
+  * No conversational apologies — state root causes and refine guardrails immediately.
+  * Strict scratch script isolation; clean workspace before turn completion.
+  * Pre-commit formatting (`poetry run ruff format`) and testing standards.
+* **`.agents/rules/`**: Modular domain rules loaded hierarchically and contextually:
+  * [`git-workflow.md`](.agents/rules/git-workflow.md): Branch status (`just -g status`), normalization, and downstream reconciliation protocols.
+  * [`split-stack-architecture.md`](.agents/rules/split-stack-architecture.md): FastHTML routes vs FastAPI sprockets, widget prefixes (`admin_`, `guild_admin_`), and decoupled migrations.
+  * [`database-testing.md`](.agents/rules/database-testing.md): PostgreSQL port 5433 management, `NullPool` fixtures, and teardown isolation.
+  * [`security-permissions.md`](.agents/rules/security-permissions.md): Discord permission bitmasks (View Channel `1 << 10` gating), default-deny auth, and checksum caching.
+  * [`fasthtml-daisyui.md`](.agents/rules/fasthtml-daisyui.md): DaisyUI card arguments, modal styling, SVG imports, and `__signature__` decorator preservation.
+  * [`flet-client.md`](.agents/rules/flet-client.md): Flet v0.82+ async routing, HTTPX client encapsulation, and desktop UI testing.
+* **`.agents/skills/`**: Domain knowledge packages using progressive disclosure (`references/` and encapsulated `scripts/`):
+  * `powercord-ecosystem`: Core architecture, auth beforeware, devkit Justfile, and failure patterns.
+  * `powercord-database-operations`: Schema design, Alembic migrations, and `scripts/check_tables.py`, `scripts/clear_pg_locks.py`.
+  * `powercord-testing`: Mocking guidelines, Cloud Build CI/CD, and `scripts/kill_stale_tests.py`.
+  * `powercord-extension-authoring`: `extension.json` manifest schemas and gadget specifications.
+  * `powercord-security-auditor`: Discord RBAC auditor rule engine and active alert scoring.
+  * `powercord-client-development`: Desktop Flet views, async routing, and client extensions.
+  * `powercord-deployment`: Production Cloud Build pipelines and Terraform infrastructure.
+  * `powercord-gcp-operations`: Production container introspection and CLI commands.
+* **`.agents/hooks.json`**: Active lifecycle enforcement:
+  * `PreToolUse`: Intercepts `run_command` to hard-block `git commit` and unconfirmed production deployments.
+  * `PostToolUse`: Auto-formats modified `.py` files using Ruff upon edit.
+  * `Stop`: Verifies no temporary scratch scripts were left in the workspace root.
+* **`.agents/mcp_config.json`**: Model Context Protocol servers (PostgreSQL introspection).
+* **`.agents/workflows/`**: Step-by-step playbooks triggered via slash commands (`/reconcile-downstream-server`, `/deploy-production`, etc.).
 
 ---
 
-## Integration Patterns
+## 3. Sub-Repository Integration
 
-Because the Powercord workspace consists of multiple repositories instead of a single monorepo, we support two design patterns for sharing agent rules:
-
-### Pattern A: Workspace Root Integration (Recommended for Monorepo-like Workspaces)
-This pattern is ideal if you open the entire parent folder (`powercord-ecosystem/`) as a single workspace in your IDE (Cursor, VS Code, etc.). 
-* Links `.cursorrules` and `.agent` directly to the parent folder.
-* **Command**:
-  ```bash
-  ./setup.sh workspace
-  ```
-
-### Pattern B: Individual Sub-Repository Integration (Recommended for Isolated Projects)
-This pattern is ideal if you open each sub-repository (e.g., just `powercord/` or just `powercord-client/`) as an independent project in your IDE.
-* Links `.cursorrules` and `.agent` into each sub-repository root using relative paths (`../powercord-agent/`).
-* **Command**:
-  ```bash
-  ./setup.sh repos
-  ```
+Each sub-repository in the ecosystem contains a scoped `AGENTS.md` providing focused instructions for its domain:
+* `powercord/AGENTS.md` — Core server framework and database rules.
+* `powercord-client/AGENTS.md` — Companion desktop client guidelines.
+* `powercord-extensions/AGENTS.md` — Server-side extension authoring invariants.
+* `powercord-client-extensions/AGENTS.md` — Client companion extension guidelines.
+* `powercord-downstream-server/AGENTS.md` — Downstream staging deployment rules.
 
 ---
 
-## Usage
+## 4. Verification
 
-To automatically create the required symlinks, run the setup script from the root of the `powercord-agent` directory or the parent workspace root:
-
+Run the setup verification script to validate workspace health:
 ```bash
-# Link to BOTH workspace root and all sub-repositories (recommended)
-./powercord-agent/setup.sh all
-
-# Link only to workspace root
-./powercord-agent/setup.sh workspace
-
-# Link only to sub-repositories
-./powercord-agent/setup.sh repos
+./powercord-agent/setup.sh
 ```
-
----
-
-## LLMS Files
-
-To give large language models (LLMs) and AI coding assistants better context, we include curated documentation maps under the shared `.agent/llms/` directory:
-
-- **[Discord API Guide](.agent/llms/discord-llms.txt)**: Core Discord Developer platform guides and interactions.
-- **[FastHTML](.agent/llms/fasthtml-llms.txt)**: Dynamic Python-based HTML layout and routing guidelines.
-- **[Pydantic](.agent/llms/pydantic-llms-full.txt)**: Data validation and model settings reference.
-- **[FastAPI](.agent/llms/fastapi-llms.txt)**: Dependency injection, APIRouter structures, and REST patterns.
-- **[SQLModel & SQLAlchemy](.agent/llms/sqlmodel-llms.txt)**: Database schemas, models, relationships, and queries.
-- **[Flet UI](.agent/llms/flet-llms.txt)**: Desktop client UI layouts, controls, page states, and event handling.
-- **[Playwright](.agent/llms/playwright-llms.txt)**: Browser testing and E2E automation actions and assertions.

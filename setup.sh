@@ -1,89 +1,54 @@
 #!/usr/bin/env bash
 # powercord-agent/setup.sh
-# Automates linking the agent rules and agent workflow files to the workspace root and sub-repositories.
+# Verifies Antigravity 2.0 workspace health, skills, rules, and hooks configuration.
 
 set -euo pipefail
 
-# Find the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-echo "=== Powercord Agent Setup ==="
-echo "Workspace root detected at: $WORKSPACE_ROOT"
+echo "=== Powercord Antigravity Workspace Verification ==="
+echo "Workspace root: $WORKSPACE_ROOT"
 
-# Function to print usage
-usage() {
-    echo "Usage: $0 [workspace|repos|all]"
-    echo "  workspace : Links .cursorrules and .agent to the workspace root (recommended for full-workspace opening)."
-    echo "  repos     : Links .cursorrules and .agent to all individual Git repositories."
-    echo "  all       : Links to both the workspace root and all sub-repositories."
+# Verify .agents directory structure
+if [ -d "$SCRIPT_DIR/.agents/skills" ] && [ -d "$SCRIPT_DIR/.agents/rules" ] && [ -d "$SCRIPT_DIR/.agents/workflows" ]; then
+    echo "✅ Native .agents structure verified in powercord-agent."
+else
+    echo "❌ Missing core .agents subdirectories in powercord-agent."
     exit 1
-}
-
-if [ $# -lt 1 ]; then
-    usage
 fi
 
-link_workspace() {
-    echo "--> Symlinking to workspace root..."
-    # Remove existing files/folders to avoid nested link creation
-    rm -rf "$WORKSPACE_ROOT/.cursorrules"
-    rm -rf "$WORKSPACE_ROOT/.agent"
-    
-    ln -s "powercord-agent/.cursorrules" "$WORKSPACE_ROOT/.cursorrules"
-    ln -s "powercord-agent/.agent" "$WORKSPACE_ROOT/.agent"
-    echo "Workspace root links created successfully."
-}
+# Verify hooks configuration
+if [ -f "$SCRIPT_DIR/.agents/hooks.json" ]; then
+    echo "✅ Lifecycle hooks (hooks.json) configured."
+else
+    echo "❌ Missing hooks.json."
+    exit 1
+fi
 
-link_repos() {
-    echo "--> Symlinking to sub-repositories..."
-    REPOS=(
-        "powercord"
-        "powercord-client"
-        "powercord-client-extensions/midi_library_client"
-        "powercord-extensions/honeypot"
-        "powercord-extensions/midi_library"
-        "powercord-downstream-server"
-    )
-    for repo in "${REPOS[@]}"; do
-        REPO_PATH="$WORKSPACE_ROOT/$repo"
-        if [ -d "$REPO_PATH" ]; then
-            echo "    Linking agent knowledge to $repo..."
-            
-            # Remove existing links to avoid nested link creation
-            rm -rf "$REPO_PATH/.cursorrules"
-            rm -rf "$REPO_PATH/.agent"
-            
-            # Resolve correct relative symlink path based on repository nesting depth
-            if [[ "$repo" == *"/"* ]]; then
-                REL_TARGET="../../powercord-agent"
-            else
-                REL_TARGET="../powercord-agent"
-            fi
-            
-            ln -s "$REL_TARGET/.cursorrules" "$REPO_PATH/.cursorrules"
-            ln -s "$REL_TARGET/.agent" "$REPO_PATH/.agent"
-        else
-            echo "    [Warning] Repository directory not found: $repo. Skipping."
-        fi
-    done
-    echo "Sub-repository links created successfully."
-}
+# Verify root AGENTS.md
+if [ -f "$WORKSPACE_ROOT/AGENTS.md" ]; then
+    echo "✅ Universal workspace AGENTS.md present."
+else
+    echo "❌ Missing workspace AGENTS.md."
+    exit 1
+fi
 
-case "$1" in
-    workspace)
-        link_workspace
-        ;;
-    repos)
-        link_repos
-        ;;
-    all)
-        link_workspace
-        link_repos
-        ;;
-    *)
-        usage
-        ;;
-esac
+# Verify sub-repository AGENTS.md files
+REPOS=(
+    "powercord"
+    "powercord-client"
+    "powercord-downstream-server"
+    "powercord-extensions"
+    "powercord-client-extensions"
+)
+for repo in "${REPOS[@]}"; do
+    if [ -f "$WORKSPACE_ROOT/$repo/AGENTS.md" ]; then
+        echo "✅ $repo/AGENTS.md verified."
+    else
+        echo "⚠️ $repo/AGENTS.md not found."
+    fi
+done
 
-echo "=== Setup Completed Successfully ==="
+echo ""
+echo "=== All Antigravity Workspace Checks Passed ==="

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "powercord-postgres": {
+      "command": "python3",
+      "args": ["-m", "app.common.mcp_db_server"],
+      "env": {
+        "POWERCORD_DATABASE_URL": "postgresql://powercord:test_pass@localhost:5433/powercord_dev"
+      }
+    }
+  }
+}
