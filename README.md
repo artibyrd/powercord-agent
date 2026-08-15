@@ -7,25 +7,58 @@ This repository houses the centralized **Google Antigravity 2.0** customization 
 ## 1. Antigravity Architecture Overview
 
 ```mermaid
-graph TD
-    subgraph Antigravity ["Google Antigravity Developer Kit"]
+flowchart TD
+    subgraph DevKit ["powercord-agent (Antigravity Developer Kit)"]
         direction TB
 
-        AGENTS["AGENTS.md<br/>(Universal Invariants)"]
-        
-        subgraph AgentsDir [".agents/"]
-            RULES["rules/<br/>• git-workflow.md<br/>• split-stack-architecture.md<br/>• database-testing.md<br/>• security-permissions.md<br/>• fasthtml-daisyui.md<br/>• flet-client.md"]
-            SKILLS["skills/<br/>• powercord-ecosystem<br/>• powercord-database-operations<br/>• powercord-testing<br/>• powercord-extension-authoring<br/>• powercord-security-auditor<br/>• powercord-client-development<br/>• powercord-deployment<br/>• powercord-gcp-operations"]
-            HOOKS["hooks.json & hooks/<br/>• PreToolUse: block git commit<br/>• PostToolUse: auto ruff format<br/>• Stop: check workspace hygiene"]
-            MCP["mcp_config.json<br/>• PostgreSQL DB Inspector (port 5433)"]
-            WF["workflows/<br/>• reconcile-downstream-server<br/>• fresh-install-downstream-server<br/>• deploy-production<br/>• audit-workflows"]
+        subgraph Governance ["1. Rules & Invariants"]
+            direction TB
+            AG["AGENTS.md<br/><i>Universal Invariants</i>"]
+            R_GIT["rules/git-workflow.md"]
+            R_ARCH["rules/split-stack-architecture.md"]
+            R_DB["rules/database-testing.md"]
+            R_SEC["rules/security-permissions.md"]
+            R_UI["rules/fasthtml-daisyui.md"]
+            R_FLET["rules/flet-client.md"]
         end
 
-        PLUGIN["plugin.json<br/>(powercord-developer-kit)"]
+        subgraph Skills ["2. Progressive Skills (.agents/skills/)"]
+            direction TB
+            S1["powercord-ecosystem"]
+            S2["powercord-database-operations"]
+            S3["powercord-testing"]
+            S4["powercord-extension-authoring"]
+            S5["powercord-security-auditor"]
+            S6["powercord-client-development"]
+            S7["powercord-deployment"]
+            S8["powercord-gcp-operations"]
+        end
+
+        subgraph Automation ["3. Active Automation & Tooling"]
+            direction TB
+            H1["hooks.json (Lifecycle Hooks)<br/>• PreToolUse: Enforce commit block<br/>• PostToolUse: Auto Ruff format<br/>• Stop: Check clean workspace"]
+            M1["mcp_config.json<br/>• PostgreSQL Inspector (:5433)"]
+            P1["plugin.json<br/>• powercord-developer-kit"]
+        end
+
+        subgraph Playbooks ["4. Workflows (.agents/workflows/)"]
+            direction TB
+            W1["/reconcile-downstream-server"]
+            W2["/fresh-install-downstream-server"]
+            W3["/deploy-production"]
+            W4["/audit-workflow-downstream-*"]
+        end
     end
 
-    AGENTS --- AgentsDir
-    AgentsDir --- PLUGIN
+    subgraph Targets ["Ecosystem Repositories"]
+        direction LR
+        T1["powercord/<br/>(Server Backend)"]
+        T2["powercord-client/<br/>(Desktop App)"]
+        T3["powercord-extensions/*<br/>(Server & Client Cogs)"]
+        T4["powercord-downstream-server/<br/>(Staging Testbed)"]
+    end
+
+    DevKit ==> Targets
 ```
 
 ---
