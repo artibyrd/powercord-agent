@@ -118,9 +118,13 @@ Test running the development servers on the host:
 7. Clean up the standalone container: `docker rm -f powercord-pg-dev`
 
 ### 7. Restore Clean State
-Bake-in extensions and restore the containerized daemon stack (this brings the total `rebuild-target` calls across installation and audit down to 2, from 3):
+Bake-in extensions, restore the containerized daemon stack, and import the database export so the environment is fully populated for visual inspection:
 ```bash
 just rebuild-target
+just _wait-for-compose-db
+if [ -f "powercord-export.sql" ]; then
+    just db-import "powercord-export.sql"
+fi
 ```
 
 ### 8. Interactive "Mk1 Eyeball" Human Verification Gate
