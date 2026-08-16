@@ -14,6 +14,9 @@ These rules govern the architectural boundary between FastHTML UI rendering, Fas
 * **Lifecycle Hooks & Data Purging**:
   * Extensions managing guild-scoped data must register a `delete_guild_data` hook in their `__init__.py`.
   * Global catalogs (e.g., `midi_library`) must be explicitly excluded from guild-level data deletion to preserve catalog integrity.
+* **Downstream Target Isolation**:
+  * Never perform ad-hoc file copies (`cp`) between `powercord/` and `powercord-downstream-server/`.
+  * Downstream testing environments must only be updated using standard skill recipes (`just rebuild-target`, `just ext-install`, `just db-import`).
 
 ---
 
@@ -26,3 +29,6 @@ These rules govern the architectural boundary between FastHTML UI rendering, Fas
   * All other prefixes/names: Public or visitor widgets.
   * Pages rendering widgets must validate and filter widgets based on their scope prefixes to prevent missing argument `TypeError` exceptions.
 * **Dynamic Extension Discovery**: Never hardcode extension names in workflows or automation. Iteratively discover extensions by scanning `powercord-extensions/*/` (server) or `powercord-client-extensions/*/` (client), using the presence of `pyproject.toml` as the sentinel for a valid extension.
+* **Discord Entity Resolution & DB Fallbacks**:
+  * Dashboard views displaying Discord entities (e.g. roles, channels) must never display raw numerical Snowflake IDs.
+  * If the live Bot Internal API is unreachable, always fall back to querying cached database models (`DiscordRole`, `DiscordChannel`) and display a subtle cache indicator (e.g., `(Loaded from DB cache)`).

@@ -31,3 +31,19 @@
 * **Symptom**: `just test` outputs `[devkit] powercord/devkit.just not found` and tests crash on DB connection.
 * **Root Cause**: Running an extension outside the standard sibling directory layout.
 * **Mitigation**: Export `POWERCORD_PATH=/path/to/powercord` so the extension resolves `devkit.just`.
+
+---
+
+## 5. Bot Internal API Lifecycle Crashes & Port Conflicts
+
+* **Symptom**: FastHTML dashboard reports `Status: 🔴 Disconnected`, with `[Errno 98] address already in use` in `bot_crash.log`.
+* **Root Cause**: Launching `start_bot_api` without task liveness checks during Discord gateway reconnections, or binding to static hardcoded `127.0.0.1:8001` URLs.
+* **Mitigation**: Check `if not getattr(self, "bot_api_task", None) or self.bot_api_task.done():` in `on_ready()`, include a port retry backoff loop in `start_bot_api()`, and always route through `get_bot_api_url()`.
+
+---
+
+## 6. Raw Snowflake ID Leaks & False Positive Access State
+
+* **Symptom**: Dashboard displays raw integers (e.g. `585161062266175521`) or displays "All available roles have been granted access" when only a small subset is assigned.
+* **Root Cause**: Missing fallback to cached `DiscordRole` database table when bot is offline, and empty state evaluating unassigned items without verifying total discovered roles.
+* **Mitigation**: Implement `_get_guild_roles` fallback to SQLModel tables, differentiate between 0 discovered roles vs 0 remaining unassigned roles, and provide manual Snowflake entry as a fallback.
