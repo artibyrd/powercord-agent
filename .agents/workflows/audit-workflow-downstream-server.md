@@ -122,3 +122,11 @@ Bake-in extensions and restore the containerized daemon stack (this brings the t
 ```bash
 just rebuild-target
 ```
+
+### 8. Interactive "Mk1 Eyeball" Human Verification Gate
+Prompt the human developer to visually inspect the running container stack before declaring the audit complete or initiating production deployment:
+1. Open `http://localhost:5001/` in a browser.
+2. Log in via Discord OAuth and inspect the Admin Dashboard (`http://localhost:5001/admin`).
+3. Verify custom widgets, MIDI library search, and honeypot settings.
+4. Confirm the Discord bot is connected to the gateway and slash commands are operational.
+

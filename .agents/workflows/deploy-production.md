@@ -42,6 +42,23 @@ User:  (must explicitly confirm)
 
 **If the user does not confirm, STOP HERE. Do not continue.**
 
+### 1.1 Verify Local Human ("Mk1 Eyeball") Approval
+Ensure the human developer has completed local interactive verification:
+- Web UI is responsive at `http://localhost:5001/`
+- Admin dashboards and security widgets render without 500 errors
+- Discord bot slash commands are registered and responding
+
+### 1.2 Verify Production Backups Health
+Before deploying new code, verify that automated daily backups have been syncing to Google Cloud Storage:
+
+```bash
+# Check GCS bucket for recent daily database backups
+PROJECT_ID=$(gcloud config get-value project)
+gcloud storage ls -l "gs://powercord-db-backups-${PROJECT_ID}/" | tail -n 10
+```
+
+Expected: Recent `.sql.gz` archives exist from the daily 03:00 UTC (application) and 04:00 UTC (systemd sync) runs.
+
 ### 2. Verify Downstream Cleanliness
 
 Ensure the downstream deployment server and all extension repos have a clean working tree with no uncommitted changes:

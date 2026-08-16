@@ -33,6 +33,13 @@ Guidance on administering PostgreSQL, authoring SQLModel schemas, and running Al
   ```bash
   python3 .agents/skills/powercord-database-operations/scripts/clear_pg_locks.py
   ```
+* **Import Backup & Harmonize Migrations**:
+  ```bash
+  just db-import "backup-file.sql"
+  just db-upgrade
+  poetry run alembic current
+  ```
+  *Note: Always run `just db-upgrade` after importing raw SQL dumps to ensure newly added columns or schema revisions are applied.*
 
 ---
 
