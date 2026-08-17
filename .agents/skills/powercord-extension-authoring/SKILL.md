@@ -23,6 +23,7 @@ powercord-extensions/<extension_name>/
 ├── sprocket.py           # FastAPI REST endpoints
 ├── widget.py             # FastHTML dashboard widgets
 ├── routes.py             # Full-page FastHTML routes
+├── actions.py            # Scheduled background jobs (interval / cron)
 ├── blueprint.py          # Database models & business logic
 └── alembic/              # Decoupled migration history
 ```

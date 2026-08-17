@@ -32,3 +32,14 @@ These rules govern the architectural boundary between FastHTML UI rendering, Fas
 * **Discord Entity Resolution & DB Fallbacks**:
   * Dashboard views displaying Discord entities (e.g. roles, channels) must never display raw numerical Snowflake IDs.
   * If the live Bot Internal API is unreachable, always fall back to querying cached database models (`DiscordRole`, `DiscordChannel`) and display a subtle cache indicator (e.g., `(Loaded from DB cache)`).
+
+---
+
+## 3. Data Health & Error Persistence Invariants
+
+* **Omission over Fallbacks in Data Views**: When rendering data galleries or lists, never render fallback/error placeholders for missing or corrupt assets. Omit malformed records completely from the UI result set, and buffer/oversample database candidate queries (e.g. `count * 2`) to ensure grid rows are fully populated.
+* **Tri-Sink Error Persistence**: Because Cloud Logging has limited retention periods, all data health errors must be persisted across three distinct sinks:
+  1. **Dedicated Local Log File**: (e.g., `logs/<extension>_data_health.log` via rotating file handler).
+  2. **Database Tracking Table**: (e.g., `<Domain>HealthError` with deduplication of unresolved issues).
+  3. **Structured Cloud Logging**: (e.g., `json_fields` with `status="flagged_for_cleanup"`).
+

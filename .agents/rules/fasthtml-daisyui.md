@@ -12,6 +12,7 @@ These rules govern UI component construction, styling, SVG imports, and testing 
 * **SVG Component Imports**: Import custom SVG elements (`Svg`, `Circle`, `Line`, `Text as SvgText`) exclusively from `fasthtml.svg` to prevent namespace collisions.
 * **Dynamic Modal Backdrops**: Dynamic HTMX-injected `<dialog>` elements bypass native `.showModal()` backdrop triggers; always style the close-trigger form backdrop container with explicit background dimming and blur classes (e.g. `modal-backdrop bg-black/60 backdrop-blur-sm`).
 * **Active Tabs Styling**: Active tabs in tab groups should scale up and receive depth: `tab-active !bg-primary !text-primary-content font-extrabold shadow-xl shadow-primary/40 scale-[1.05] border border-primary/30 z-10`.
+* **Responsive Grid Column Calculation**: When computing column counts dynamically in JavaScript for FastHTML grid layouts, divide the container client width by `(min_tile_width + grid_gap)` (e.g., `Math.floor((clientWidth + gap) / (min_tile_width + gap))`), matching the exact CSS Grid `minmax(...)` specification.
 
 ---
 
