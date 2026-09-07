@@ -37,6 +37,19 @@ Development adheres to `inv-branch-pr-review-gate`, `inv-downstream-integration-
 6. **Release Tagging on `main`**: Following PR merge, pull `main` and execute the release sequence: `just release <version> "<message>"`. Releases are tagged using that specific repository's own SemVer.
 7. **Post-Release `/learn` & Lean Patch Release**: Post-release retrospectives triggered by `/learn` synthesize lessons into rules/skills, bump the core/downstream patch version (`vX.Y.1`), and deploy an immediate lean patch release.
 
+### 2.1 Dynamic Mock Resolution for Monolithic Deconstructions
+
+When modularizing large files into subpackages (e.g. `main_ui.py` -> `app/ui/routes/*`):
+1. **Preserve Legacy Test Compatibility**: Existing unit tests frequently patch symbols at legacy module locations (`app.ui.dashboard.*`, `app.main_ui.*`, `app.ui.helpers.*`).
+2. **Avoid Static Import Binding**: Avoid binding functions or singletons at submodule import time if tests monkeypatch them at the parent module level.
+3. **Use Dynamic Resolvers**: Implement lightweight runtime resolvers using `sys.modules`:
+   ```python
+   def _dh(name: str, default: Any = None) -> Any:
+       mod = sys.modules.get("app.ui.dashboard") or sys.modules.get("app.main_ui")
+       return getattr(mod, name, default) if mod else default
+   ```
+4. **Database Session & Engine Fallbacks**: When resolving database connections in decomposed routes, query `sys.modules` for mocked `init_connection_engine`, `get_session`, or `Session` mocks before falling back to production singletons.
+
 ---
 
 ## 3. Multi-Repo Boundaries & Task Runners
