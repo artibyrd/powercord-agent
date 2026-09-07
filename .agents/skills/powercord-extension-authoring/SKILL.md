@@ -28,9 +28,20 @@ powercord-extensions/<extension_name>/
 └── alembic/              # Decoupled migration history
 ```
 
+## 2. Extension Lifecycle & Pre-Release Isolation
+
+Extensions progress through distinct lifecycle stages:
+1. **Pre-Release / Local Development**:
+   - Gadgets under active local development (such as `powercord-client-extensions/midi_library_client`) that have not reached an initial `1.0.0` release are kept local and unpublished.
+   - They remain on local branches with baseline development versioning.
+   - **Zero Lockstep Bumping**: Pre-release extensions must never be artificially bumped in lockstep with core server releases. They tuck into their eventual initial `1.0.0` release.
+2. **Published Extension**:
+   - Once released at `1.0.0`, the extension is published on GitHub.
+   - Published extensions follow independent SemVer lifecycles: version bumps occur only when that specific extension's code changes.
+
 ---
 
-## 2. Deep References
+## 3. Deep References
 
 * [Extension Manifest Spec](references/manifest-spec.md) — `extension.json` format and widget placement.
 * [Gadgets Spec](references/gadget-specs.md) — Cogs, sprockets, widgets, and route signatures.
