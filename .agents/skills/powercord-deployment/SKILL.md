@@ -29,6 +29,15 @@ Deployment, Cloud Build pipelines, Terraform infrastructure, and release verific
   ```bash
   cd powercord && just tf-apply --yes
   ```
+* **Release & Manifest Parity Lifecycle**:
+  1. Bump version in `powercord/pyproject.toml` and align `tests/governance/test_version_and_manifest_parity.py`.
+  2. Run pre-release validation: `just check && just test-gov`.
+  3. Execute release: `just release <version> "<message>"` (stages `Justfile`, `pyproject.toml`, and governance parity tests).
+  4. Reconcile downstream testbed:
+     ```bash
+     cd powercord-downstream-server && git pull origin main && just rebuild-target
+     ```
+  5. Verify live container health on `http://localhost:5001/`.
 
 ---
 

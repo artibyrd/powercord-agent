@@ -34,3 +34,8 @@ Use this skill when refactoring, modularizing, or auditing Python source files, 
 ### 5. Client-Server Runtime Isolation
 * Companion desktop code (`powercord-client`) must never import backend modules (`app.*`, `nextcord`, `fasthtml`).
 * Communication is strictly over asynchronous HTTP REST (`httpx.AsyncClient`) or WebSockets.
+
+### 6. FastHTML Route Typing Convention
+* **Dynamic Element Tags**: FastHTML generates HTML tags (`Div`, `Td`, `Form`, `Table`, etc.) dynamically at runtime, causing extensive `[name-defined]` false positives in static typecheckers.
+* **Header Convention**: FastHTML route and UI component modules assembling visual trees should place `# mypy: ignore-errors` on line 1.
+* **Strict Typing for Domain & Logic**: Pure domain models, API sprockets (`sprocket.py`), database queries, and `compute_*` pure functions must NEVER disable Mypy and must maintain strict static typing.

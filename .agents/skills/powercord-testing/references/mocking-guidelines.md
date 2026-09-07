@@ -34,3 +34,11 @@ def test_admin_route_action(mock_admin, client):
     ...
 ```
 
+---
+
+## 4. Deconstructed Submodule Patch Resolution
+
+When testing submodules that were refactored out of legacy monoliths:
+* If submodules use `sys.modules` dynamic resolvers (`_dh`, `_gh`), existing patches targeting legacy paths (`@patch("app.ui.dashboard.get_internal_api_client")`) remain fully effective without modifying the test suite.
+* When authoring new tests for decomposed modules, patch the specific submodule or helper directly, but preserve backward-compatible test fixtures for legacy caller paths.
+
