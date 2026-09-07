@@ -24,12 +24,14 @@ Powercord consists of a centralized backend server framework, a Flet-based UI co
 ## 2. Core Development & PR Lifecycle
 
 Development adheres to `inv-branch-pr-review-gate` and `inv-mk1-downstream-walkthrough-verification`:
-1. **Feature Branch Isolation**: Never develop directly on `main`. Create a feature branch in affected source repos: `just branch feat/<name>`.
+1. **Feature Branch Isolation & Semantic Naming**: Never develop directly on `main`. Create a feature branch in affected source repos: `just branch feat/<topic>`.
+   - **Semantic Topic Names Only**: Branch names must describe the semantic feature or refactor (e.g., `feat/decompose-cog-views`, `feat/governance-ratchet`, `feat/align-baseline-manifest`).
+   - **Zero Cross-Repo Version Coupling**: Never name a branch after the version number of a *different* repository (e.g., do not name an extension or client branch after core server's `v2.0.0`).
 2. **Incremental Local Commits**: Commit incrementally on the feature branch: `just commit <msg>` (gated by `just check`).
 3. **Downstream Integration Verification**: Sync changes downstream (`just ext-install`), rebuild Docker target (`just rebuild-target`), and verify live functionality locally on `http://localhost:5001/`.
 4. **Push Branch & Open PR**: Push the feature branch and open a pull request via GitHub CLI: `just pr-create "<title>"`.
 5. **Human Mk1 Review Gate**: Human reviewer inspects side-by-side diffs, runs interactive checks on the running local container, and approves/merges the PR on GitHub.
-6. **Release Tagging on `main`**: Following PR merge, pull `main` and execute the release sequence: `just release <version> "<message>"`.
+6. **Release Tagging on `main`**: Following PR merge, pull `main` and execute the release sequence: `just release <version> "<message>"`. Releases are tagged using that specific repository's own SemVer.
 
 ---
 
