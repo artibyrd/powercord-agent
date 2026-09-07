@@ -39,6 +39,22 @@ Deployment, Cloud Build pipelines, Terraform infrastructure, and release verific
      ```
   5. Verify live container health on `http://localhost:5001/`.
 
+### 2.1 Docker Hygiene & Build Cache Management
+
+Frequent container builds can quickly accumulate 50GB+ of dangling layers and builder cache:
+* **Standard Cleanup (Safe Daily)**:
+  ```bash
+  just docker-clean
+  ```
+  Prunes dangling images and builder cache older than 24 hours.
+* **Deep Clean (Reclaim Full Disk Space)**:
+  ```bash
+  just docker-clean all=true
+  ```
+  Prunes all dangling images and completely purges the Docker build cache.
+* **Operational Gates**:
+  - Run `just docker-clean` after rebuilding downstream test containers and before submitting production Cloud Builds.
+
 ---
 
 ## 3. Deep References

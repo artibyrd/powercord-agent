@@ -33,8 +33,9 @@ Use this skill when modifying `AGENTS.md`, creating new skills, running `/rememb
 ### Tier 2: Shift-Left Automated Integrity Tests (`tests/governance/`)
 * Automated in-memory Pytest gates running in `<3s` asserting 500 LOC compliance, manifest parity, migration consistency, and split-stack isolation.
 
-### Tier 3: Blueprints, Specs & Roadmap (`docs/`, `ROADMAP.md`)
+### Tier 3: Blueprints, Specs & Roadmap (`docs/`, `ROADMAP.md`, `CHANGELOG.md`)
 * Deep architectural rationale, sequence diagrams, and phased release milestones.
+* **Changelog vs. Roadmap Symmetry**: `CHANGELOG.md` is the immutable record of *completed* work; `ROADMAP.md` is the forward-looking spec of *planned* work. When a milestone completes, migrate its achievements to `CHANGELOG.md` and prune from `ROADMAP.md`.
 
 ---
 
