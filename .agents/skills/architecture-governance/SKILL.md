@@ -39,3 +39,17 @@ Use this skill when refactoring, modularizing, or auditing Python source files, 
 * **Dynamic Element Tags**: FastHTML generates HTML tags (`Div`, `Td`, `Form`, `Table`, etc.) dynamically at runtime, causing extensive `[name-defined]` false positives in static typecheckers.
 * **Header Convention**: FastHTML route and UI component modules assembling visual trees should place `# mypy: ignore-errors` on line 1.
 * **Strict Typing for Domain & Logic**: Pure domain models, API sprockets (`sprocket.py`), database queries, and `compute_*` pure functions must NEVER disable Mypy and must maintain strict static typing.
+
+### 7. Facade-Preserving Monolith Deconstruction
+* **Monolith Replacement**: When graduating a file from `governance_ratchet.json`, replace the legacy monolith with an assembler/facade module ($\le 500$ LOC) that re-exports all public symbols (`__all__`).
+* **Gadget Loader Scope Preservation**: Define thin pass-through wrapper functions (e.g. `def guild_admin_*_widget(...)`) in the facade module so `extension_loader.py` gadget inspection (`getattr(obj, "__module__", None) == module.__name__`) discovers them.
+* **Dynamic Mock Propagation**: In child subpackages querying the database, resolve `Session` and `engine` dynamically from the facade inside handler functions:
+  ```python
+  import app.extensions.<ext>.widget as facade
+  session_cls = getattr(facade, "Session", Session)
+  current_engine = getattr(facade, "engine", engine)
+  with session_cls(current_engine) as session:
+      ...
+  ```
+  This guarantees that unit tests patching `app.extensions.<ext>.widget.Session` or `engine` continue to inject their mocks into submodules without circular import penalties.
+
