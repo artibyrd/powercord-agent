@@ -28,6 +28,22 @@ powercord-extensions/<extension_name>/
 └── alembic/              # Decoupled migration history
 ```
 
+### 1.1 Sole Source of Truth & Downstream Isolation
+
+1. **Single Source of Truth (`powercord-extensions/<ext>`)**:
+   - The standalone repository `powercord-extensions/<extension_name>` is the ONLY location where an extension's source code, tests, and manifest live.
+   - **Zero Core Installs**: NEVER install, edit, or copy extension code into the core `powercord` repository. Core `app/extensions/` contains only internal built-ins (`custom_content`, `example`, `utilities`).
+2. **Downstream-Only Staging**:
+   - External extensions are installed exclusively in `powercord-downstream-server/`:
+     ```bash
+     cd powercord-downstream-server && just ext-install ../powercord-extensions/<extension_name>
+     ```
+3. **Dependency Isolation**:
+   - Dependencies required by an extension must be added exclusively to the extension's own `pyproject.toml` (e.g. `poetry add --directory ../powercord-extensions/<name> <dep>`).
+   - Never add extension-specific dependencies to core `powercord/pyproject.toml`.
+4. **Git Rebase Upstream Sync**:
+   - When updating downstream server with upstream core framework changes, pull via git rebase (`git pull --rebase origin <branch>`). Never copy files piecemeal via ad-hoc `cp` (`inv-source-isolation-no-ad-hoc-cp`).
+
 ## 2. Extension Lifecycle & Pre-Release Isolation
 
 Extensions progress through distinct lifecycle stages:

@@ -32,6 +32,7 @@ Development adheres to `inv-branch-pr-review-gate`, `inv-downstream-integration-
    - Unlike Credence (which deploys dev previews to Cloud Run via GitHub Actions), Powercord runs on a single VM (`inv-single-vm-cost-ceiling`) with zero cloud preview URLs.
    - The downstream server (`powercord-downstream-server`) is the mandatory local integration sandbox.
    - Sync modified extensions downstream (`just ext-install`), rebuild the Docker container target (`docker compose up --build -d`), apply multi-head Alembic migrations, and verify live functionality locally on `http://localhost:5001/` before opening PRs.
+   - **Docker Hygiene**: Run `just docker-clean` regularly to purge dangling images and stale build cache from local testbed builds.
 4. **Push Branch & Open PR**: Push the feature branch and open a pull request via GitHub CLI: `just pr-create "<title>"`.
 5. **Human Mk1 Review Gate**: Human reviewer inspects side-by-side diffs on GitHub, tests the locally running container, and approves/merges the PR.
 6. **Release Tagging on `main`**: Following PR merge, pull `main` and execute the release sequence: `just release <version> "<message>"`. Releases are tagged using that specific repository's own SemVer.
@@ -49,6 +50,13 @@ When modularizing large files into subpackages (e.g. `main_ui.py` -> `app/ui/rou
        return getattr(mod, name, default) if mod else default
    ```
 4. **Database Session & Engine Fallbacks**: When resolving database connections in decomposed routes, query `sys.modules` for mocked `init_connection_engine`, `get_session`, or `Session` mocks before falling back to production singletons.
+
+### 2.2 Session Documentation Parity (`CHANGELOG.md` & `ROADMAP.md`)
+
+To avoid documentation drift and fragmented sources of truth:
+1. **Active Session Updates**: Whenever completing a feature, bugfix, or governance refactor, update `CHANGELOG.md` in that active session under `[Unreleased]` or the targeted release milestone.
+2. **Roadmap Forward-Looking Rule**: `ROADMAP.md` is exclusively for future plans, architectural specs, and pending milestones. Once a milestone or task is completed, remove the detailed task breakdown from `ROADMAP.md` because it is now preserved in `CHANGELOG.md`. Never maintain duplicate task lists in both places.
+3. **Commit Atomic Changes**: Include the `CHANGELOG.md` and `ROADMAP.md` updates directly within the semantic feature branch commit or release preparation commit.
 
 ---
 
