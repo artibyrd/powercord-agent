@@ -21,12 +21,15 @@ Powercord consists of a centralized backend server framework, a Flet-based UI co
 
 ---
 
-## 2. Core Development Workflow
+## 2. Core Development & PR Lifecycle
 
-1. **Edit Source Repositories**: Author and verify changes inside upstream source repos (`powercord/`, `powercord-client/`, `powercord-extensions/`).
-2. **Verify Upstream**: Run tests locally in the source repo using `just test` or `poetry run pytest`.
-3. **Submit for Human Review**: Present changes for human code review and commit.
-4. **Reconcile Downstream**: Once committed upstream, sync the downstream deployment via `/reconcile-downstream-server`.
+Development adheres to `inv-branch-pr-review-gate` and `inv-mk1-downstream-walkthrough-verification`:
+1. **Feature Branch Isolation**: Never develop directly on `main`. Create a feature branch in affected source repos: `just branch feat/<name>`.
+2. **Incremental Local Commits**: Commit incrementally on the feature branch: `just commit <msg>` (gated by `just check`).
+3. **Downstream Integration Verification**: Sync changes downstream (`just ext-install`), rebuild Docker target (`just rebuild-target`), and verify live functionality locally on `http://localhost:5001/`.
+4. **Push Branch & Open PR**: Push the feature branch and open a pull request via GitHub CLI: `just pr-create "<title>"`.
+5. **Human Mk1 Review Gate**: Human reviewer inspects side-by-side diffs, runs interactive checks on the running local container, and approves/merges the PR on GitHub.
+6. **Release Tagging on `main`**: Following PR merge, pull `main` and execute the release sequence: `just release <version> "<message>"`.
 
 ---
 
