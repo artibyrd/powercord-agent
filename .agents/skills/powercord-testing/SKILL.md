@@ -15,7 +15,9 @@ Standards for running test suites, mocking external APIs, and preventing deadloc
 
 * **Run Upstream Test Suite**:
   ```bash
-  cd powercord && poetry run pytest
+  cd powercord && just test --type unit
+  # Or when invoking pytest directly against the dev container:
+  POWERCORD_POSTGRES_PASSWORD=$(grep POWERCORD_POSTGRES_PASSWORD .env | cut -d= -f2) poetry run pytest tests/unit/<test_file>.py
   ```
 * **Run with Coverage**:
   ```bash

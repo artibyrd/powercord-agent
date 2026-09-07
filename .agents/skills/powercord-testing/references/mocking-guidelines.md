@@ -42,3 +42,20 @@ When testing submodules that were refactored out of legacy monoliths:
 * If submodules use `sys.modules` dynamic resolvers (`_dh`, `_gh`), existing patches targeting legacy paths (`@patch("app.ui.dashboard.get_internal_api_client")`) remain fully effective without modifying the test suite.
 * When authoring new tests for decomposed modules, patch the specific submodule or helper directly, but preserve backward-compatible test fixtures for legacy caller paths.
 
+---
+
+## 5. Deconstructed Facade Mock Resolution
+
+When a monolith (e.g. `widget.py`) is decomposed into modular subpackages (`widgets/`, `views/`, `security_engine/`):
+* Existing unit test suites patch symbols at the facade root: `@patch("app.extensions.<ext>.widget.Session")` or `@patch("app.extensions.<ext>.widget.engine")`.
+* Decomposed submodules must dynamically resolve `Session` and `engine` from the facade at runtime inside handlers:
+  ```python
+  import app.extensions.<ext>.widget as w
+  session_cls = getattr(w, "Session", Session)
+  current_engine = getattr(w, "engine", engine)
+  with session_cls(current_engine) as session:
+      ...
+  ```
+* This prevents decomposed submodules from executing against live database connections or bypassing mocked session returns when tests patch facade imports.
+
+
