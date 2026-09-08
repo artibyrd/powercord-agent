@@ -48,157 +48,94 @@ Ensure the human developer has completed local interactive verification:
 - Admin dashboards and security widgets render without 500 errors
 - Discord bot slash commands are registered and responding
 
-### 1.2 Verify Production Backups Health
-Before deploying new code, verify that automated daily backups have been syncing to Google Cloud Storage:
+### 1.2 Inspect Live Production State
+Inspect the live VM, running container image, and existing backup archives:
 
 ```bash
-# Check GCS bucket for recent daily database backups
-PROJECT_ID=$(gcloud config get-value project)
-gcloud storage ls -l "gs://powercord-db-backups-${PROJECT_ID}/" | tail -n 10
+cd powercord-downstream-server
+just prod-status
 ```
 
-Expected: Recent `.sql.gz` archives exist from the daily 03:00 UTC (application) and 04:00 UTC (systemd sync) runs.
+Expected: VM status is `RUNNING`, container image tag is shown, recent `.sql.gz` archives exist in GCS, and health endpoints respond.
 
-### 2. Verify Downstream Cleanliness
-
-Ensure the downstream deployment server and all extension repos have a clean working tree with no uncommitted changes:
+### 2. Verify Downstream Cleanliness & Governance
+Before deploying, ensure working trees are clean and hermetic pre-commit checks pass:
 
 ```bash
-cd "../powercord-downstream-server"
-
-echo "=== Checking powercord-downstream-server/ ==="
-git status
-# Expected: nothing to commit, working tree clean
-
-echo ""
-echo "=== Checking extensions ==="
-for ext_dir in ../powercord-extensions/*/; do
-    if [ -d "$ext_dir/.git" ]; then
-        ext_name=$(basename "$ext_dir")
-        echo "→ $ext_name:"
-        git -C "$ext_dir" status --short
-    fi
-done
+cd powercord-downstream-server
+just check
 ```
 
-Expected: All repos report a clean working tree. If any repo has uncommitted
-changes, commit or stash them before proceeding.
+Expected: All shift-left governance tests, linting, and formatting checks pass (<3s).
 
-### 3. Run Full QA Suite
-
-Run the complete QA suite in the downstream repository to catch lint errors, formatting issues, type-check failures, and test regressions:
+### 3. Create Verified Pre-Deploy Production Backup
+Before altering any production code or running migrations, take an immediate, verified snapshot of the live production database:
 
 ```bash
-cd "../powercord-downstream-server"
-just qa
+cd powercord-downstream-server
+just prod-backup pre-deploy
 ```
 
-Expected: All checks pass — linting, formatting, mypy type checking, and the
-full test suite complete without errors.
+This recipe:
+1. Executes `BackupService.create_daily_backup()` inside the running production container.
+2. Captures the currently running image tag into `backups/last_known_good.json`.
+3. Downloads a local copy of the new `.sql.gz` backup archive into `backups/`.
+4. Confirms GCS sync.
 
-**If any check fails, STOP. Fix the issue before deploying.**
-
-### 4. Verify Extension Commits
-
-Ensure all extension repositories have their latest changes committed and
-pushed to their respective remotes:
-
-```bash
-for ext_dir in ../powercord-extensions/*/; do
-    if [ -d "$ext_dir/.git" ]; then
-        ext_name=$(basename "$ext_dir")
-        echo "→ $ext_name:"
-        echo "  Latest commit:"
-        git -C "$ext_dir" log --oneline -1
-        echo "  Remote sync:"
-        git -C "$ext_dir" status -sb
-        echo ""
-    fi
-done
-```
-
-Expected: Each extension shows a recent commit and is in sync with its remote
-(no `ahead` or `behind` indicators).
-
-### 5. Trigger Cloud Build
+### 4. Trigger Production Deployment (Automated 5-Gate Pipeline)
 
 > **⚠️ FINAL SAFETY CHECK: Confirm that Step 1 consent was explicitly received.**
-> **Do NOT execute `just gcp-build` without prior user confirmation.**
+> **Do NOT execute `just prod-deploy` without prior user confirmation.**
 
-Deploy to production via GCP Cloud Build:
-
-```bash
-cd "../powercord-downstream-server"
-just gcp-build
-```
-
-This command submits a Cloud Build that:
-1. Builds the production Docker image
-2. Pushes it to the Artifact Registry
-3. Automatically deploys the new image to the production Compute Engine VM (`powercord-instance`) via Terraform and resets the instance.
-
-The build typically takes 3–5 minutes.
-
-### 6. Monitor Build Progress
-
-Monitor the Cloud Build logs to track deployment progress:
+Execute the safe deployment pipeline:
 
 ```bash
-cd "../powercord-downstream-server"
-
-# Check the latest Cloud Build status
-gcloud builds list --limit=1 --format="table(id,status,startTime,duration)"
-
-# Stream logs from the latest build (if still running)
-gcloud builds log $(gcloud builds list --limit=1 --format="value(id)") --stream
+cd powercord-downstream-server
+just prod-deploy
 ```
 
-Expected: Build status progresses through `QUEUED` → `WORKING` → `SUCCESS`.
-If the build fails, inspect the logs for errors before re-attempting.
+`prod-deploy` automatically runs the 5 safety gates:
+1. **Gate 1**: Verifies working tree cleanliness across downstream and all extensions.
+2. **Gate 2**: Runs hermetic QA checks (`just check`).
+3. **Gate 3**: Performs a mandatory pre-deploy database backup (`just prod-backup pre-deploy`).
+4. **Gate 4**: Submits Cloud Build with `--project={{gcp_project}}` and resets `powercord-instance`.
+5. **Gate 5**: Polls the live health endpoint `http://<vm_ip>/api/health` every 3s for up to 90s.
 
-### 7. Post-Deployment Verification
+### 5. Post-Deployment Verification & Live Logs
 
-Verify the production container is running with the new image on the Compute Engine instance:
+If needed, stream container logs or verify services:
 
 ```bash
-# Check the VM instance status
-gcloud compute instances describe powercord-instance --zone us-central1-a --format="value(status)"
+cd powercord-downstream-server
 
-# SSH into the instance and list running containers
-gcloud compute ssh powercord-instance --zone us-central1-a --command "docker ps"
+# Stream live container logs
+just prod-logs 100
 
-# Stream docker logs from the powercord container to verify successful startup
-gcloud compute ssh powercord-instance --zone us-central1-a --command "docker logs --tail 50 \$(docker ps -q -f name=klt-powercord)"
+# Inspect overall production status
+just prod-status
 ```
 
-Expected: The VM status is `RUNNING`, the Docker container is active, and logs contain `Database initialized.` and supervisord starting all services without crash traces.
+### 6. Rollback Procedures (If Needed)
 
-### 8. Smoke Test
+If an issue occurs after deployment:
 
-Verify the deployed application is responding correctly (replace `<external-ip-or-domain>` with the actual IP/domain of the VM):
+#### A. Container / Image Rollback
+Roll back to the previous known-good image captured in `backups/last_known_good.json`:
 
 ```bash
-PROD_URL="http://<external-ip-or-domain>"
-
-# Health check endpoint
-echo "→ Health check:"
-curl -s -o /dev/null -w "HTTP %{http_code}\n" "$PROD_URL/api/health"
-
-# API root endpoint
-echo "→ API root:"
-curl -s -o /dev/null -w "HTTP %{http_code}\n" "$PROD_URL/api"
-
-# Dashboard load check
-echo "→ Dashboard:"
-curl -s -o /dev/null -w "HTTP %{http_code}\n" "$PROD_URL/"
-echo ""
+cd powercord-downstream-server
+just prod-rollback
 ```
 
-Expected: All endpoints return `HTTP 200`. If any endpoint returns an error,
-check the application logs immediately.
+To roll back to a specific historical image:
+```bash
+just prod-rollback image=us-central1-docker.pkg.dev/bards-guild-midi-project/powercord/powercord-app:<TAG>
+```
 
----
+#### B. Database Rollback / Disaster Recovery
+If schema migrations broke backwards compatibility or corrupted data, restore the pre-deploy database snapshot:
 
-> **⚠️ Reminder:** If any step fails after deployment, coordinate with the user
-> on whether to roll back. A rollback can be performed by re-deploying the
-> previous known-good image from the container registry.
+```bash
+cd powercord-downstream-server
+just prod-db-restore backups/<backup_name>.sql.gz
+```
