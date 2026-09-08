@@ -14,8 +14,21 @@ Deployment, Cloud Build pipelines, Terraform infrastructure, and release verific
 ## 1. Safety Invariants
 
 > [!CAUTION]
+> **Zero AI Self-Merges (`inv-branch-pr-review-gate`)**:
+> Agents must **NEVER** run `gh pr merge`. When upstream fixes are required during pre-flight or deployment:
+> 1. Create a branch (`git checkout -b fix/<topic>`).
+> 2. Verify locally (`just check`).
+> 3. Open PR (`gh pr create`).
+> 4. **STOP and request Human Mk1 review and merge**. Never self-merge PRs.
+
+> [!CAUTION]
 > **`just gcp-build` deploys to LIVE PRODUCTION.**
 > Agents must **NEVER** run `just gcp-build` without explicit user permission. Always use `/deploy-production` workflow.
+
+> [!NOTE]
+> **Cold Boot Timing & Container Isolation**:
+> - Production cold boot (VM reset + Docker pull + Alembic migrations) requires 90–120s. Gate 5 polls for 180s.
+> - Cloud Build containers mount isolated repositories at `/workspace`. Tests must never assume `REPO_ROOT.parent` exists without skip guards.
 
 ---
 

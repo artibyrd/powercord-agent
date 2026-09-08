@@ -14,7 +14,7 @@ Welcome to the **Powercord Ecosystem** (`/home/pendragon/Projects/powercord-ecos
 ## 1. Tier 0: Universal Core Invariants
 
 ### Class α: Sovereign Safety, Custody & Human Authority (P0)
-- **`inv-branch-pr-review-gate`**: Zero direct pushes to `main`. Semantic branches (`feat/<topic>`) gated by `just check`. Verify downstream (port 5001) before PRs (`gh pr create`). Human Mk1 review.
+- **`inv-branch-pr-review-gate`**: Zero direct pushes to `main`. Branches gated by `just check`. PRs (`gh pr create`) require human Mk1 review; zero AI self-merges.
 - **`inv-single-vm-cost-ceiling`**: Single fixed-cost GCE VM (`powercord-instance`). Zero autoscaling.
 - **`inv-no-unauthorized-gcp-deploy`**: GCP deploys (`just gcp-build`) require explicit human confirmation.
 - **`inv-mk1-downstream-walkthrough-verification`**: Walkthroughs require interactive testing on local downstream container (port 5001) before PRs.
