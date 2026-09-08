@@ -21,6 +21,39 @@ Deployment, Cloud Build pipelines, Terraform infrastructure, and release verific
 
 ## 2. Quick Recipes
 
+### 2.1 Production Management (Downstream `powercord-downstream-server/`)
+* **Inspect Live Production State**:
+  ```bash
+  cd powercord-downstream-server && just prod-status
+  ```
+  Inspects VM status, currently deployed container image, latest GCS backups, and pings live endpoints.
+* **Stream Live Production Container Logs**:
+  ```bash
+  cd powercord-downstream-server && just prod-logs 100
+  ```
+* **Mandatory Pre-Deploy Backup**:
+  ```bash
+  cd powercord-downstream-server && just prod-backup pre-deploy
+  ```
+  Dumps container database, syncs to GCS, saves local `.sql.gz` copy to `./backups/`, and writes `backups/last_known_good.json`.
+* **Safe Production Deployment (Gated)**:
+  ```bash
+  cd powercord-downstream-server && just prod-deploy
+  ```
+  *Requires explicit human approval.* Automatically executes: 1) working tree clean check, 2) `just check`, 3) `just prod-backup`, 4) Cloud Build & VM reset, 5) 90-second health poll.
+* **Push-Button Rollback**:
+  ```bash
+  cd powercord-downstream-server && just prod-rollback
+  # Or roll back to specific image:
+  cd powercord-downstream-server && just prod-rollback image=<image_uri>
+  ```
+  Rolls back to image in `backups/last_known_good.json` via Terraform and resets VM.
+* **Database Disaster Recovery / Restore**:
+  ```bash
+  cd powercord-downstream-server && just prod-db-restore backups/<backup_file>.sql.gz
+  ```
+
+### 2.2 Infrastructure & Release
 * **Plan Infrastructure Changes**:
   ```bash
   cd powercord && just tf-plan
