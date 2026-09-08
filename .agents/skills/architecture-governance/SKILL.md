@@ -53,3 +53,7 @@ Use this skill when refactoring, modularizing, or auditing Python source files, 
   ```
   This guarantees that unit tests patching `app.extensions.<ext>.widget.Session` or `engine` continue to inject their mocks into submodules without circular import penalties.
 
+### 8. Container Filesystem Isolation & Path Invariants
+* Governance tests and build scripts running in isolated container environments (e.g. Cloud Build `/workspace`) mount only a single repository.
+* Tests must never assume sibling repositories (`REPO_ROOT.parent / ...`) exist without graceful skip guards (`if not ROOT.exists(): pytest.skip(...)`).
+* Guard all workspace-level file inspections to ensure isolated container builds never crash on absent multi-repo sibling paths.
