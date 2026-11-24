@@ -1,5 +1,17 @@
 {
   "name": "powercord-developer-kit",
-  "version": "2.0.2",
-  "description": "Complete Google Antigravity developer toolkit, skills, rules, and lifecycle hooks for the Powercord ecosystem."
+  "displayName": "Powercord Developer Kit",
+  "version": "2.5.0",
+  "description": "Domain skills, universal invariants, PostgreSQL MCP config, and production-safety hooks for the Powercord ecosystem.",
+  "author": {
+    "name": "Powercord Team",
+    "url": "https://github.com/artibyrd"
+  },
+  "repository": "https://github.com/artibyrd/powercord-agent",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Run pre-flight governance checks and inspect multi-repo status across the Powercord ecosystem",
+    "Scaffold a Powercord server extension with [tool.powercord] in pyproject.toml, widgets, and an isolated Alembic migration head",
+    "Audit Discord RBAC permission bitmasks and verify downstream port 5001 readiness before opening a PR"
+  ]
 }
