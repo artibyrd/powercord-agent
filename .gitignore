@@ -1,0 +1,7 @@
+.gemini/
+.vscode/
+.cursor/
+.idea/
+__pycache__/
+*.pyc
+.DS_Store

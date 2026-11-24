@@ -1,54 +1,50 @@
 #!/usr/bin/env bash
 # powercord-agent/setup.sh
-# Verifies Antigravity 2.0 workspace health, skills, rules, and hooks configuration.
+# Verifies native Antigravity v2.34 plugin layout, skill overlays, hooks, and workspace parity.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-echo "=== Powercord Antigravity Workspace Verification ==="
+echo "=== Powercord Developer Kit Verification ==="
+echo "Plugin root:    $SCRIPT_DIR"
 echo "Workspace root: $WORKSPACE_ROOT"
 
-# Verify .agents directory structure
-if [ -d "$SCRIPT_DIR/.agents/skills" ] && [ -d "$SCRIPT_DIR/.agents/rules" ] && [ -d "$SCRIPT_DIR/.agents/workflows" ]; then
-    echo "✅ Native .agents structure verified in powercord-agent."
+# 1. Run pure-stdlib plugin & overlay linter
+python3 "$SCRIPT_DIR/scripts/lint_skills.py"
+
+# 2. Run hook unit tests
+python3 -m unittest discover -s "$SCRIPT_DIR/tests" -v
+
+# 3. Run strict Antigravity plugin validator when agy CLI is installed
+if command -v agy >/dev/null 2>&1; then
+    echo "Running agy plugin validate --strict..."
+    agy plugin validate --strict "$SCRIPT_DIR"
 else
-    echo "❌ Missing core .agents subdirectories in powercord-agent."
-    exit 1
+    echo "Note: 'agy' CLI not found on PATH; skipping optional native plugin validator."
 fi
 
-# Verify hooks configuration
-if [ -f "$SCRIPT_DIR/.agents/hooks.json" ]; then
-    echo "✅ Lifecycle hooks (hooks.json) configured."
-else
-    echo "❌ Missing hooks.json."
-    exit 1
-fi
-
-# Verify root AGENTS.md
+# 4. Verify umbrella workspace parity when running inside multi-repo ecosystem
 if [ -f "$WORKSPACE_ROOT/AGENTS.md" ]; then
-    echo "✅ Universal workspace AGENTS.md present."
-else
-    echo "❌ Missing workspace AGENTS.md."
-    exit 1
+    if cmp -s "$WORKSPACE_ROOT/AGENTS.md" "$SCRIPT_DIR/rules/AGENTS.md"; then
+        echo "OK: Umbrella AGENTS.md matches powercord-agent/rules/AGENTS.md."
+    else
+        echo "ERROR: Umbrella AGENTS.md has drifted from powercord-agent/rules/AGENTS.md."
+        exit 1
+    fi
 fi
 
-# Verify sub-repository AGENTS.md files
-REPOS=(
-    "powercord"
-    "powercord-client"
-    "powercord-downstream-server"
-    "powercord-extensions"
-    "powercord-client-extensions"
-)
-for repo in "${REPOS[@]}"; do
-    if [ -f "$WORKSPACE_ROOT/$repo/AGENTS.md" ]; then
-        echo "✅ $repo/AGENTS.md verified."
+if [ -d "$WORKSPACE_ROOT/.agents" ]; then
+    if [ -e "$WORKSPACE_ROOT/.agents/overrides" ] && [ -f "$WORKSPACE_ROOT/.agents/plugins.json" ]; then
+        echo "OK: Umbrella .agents/overrides and .agents/plugins.json verified."
     else
-        echo "⚠️ $repo/AGENTS.md not found."
+        echo "WARNING: Umbrella .agents/ is missing overrides symlink or plugins.json."
     fi
-done
+    if [ -f "$WORKSPACE_ROOT/.agents/skills.json" ]; then
+        echo "ERROR: Umbrella .agents/skills.json duplicates plugin skill discovery; remove it and rely on .agents/plugins.json."
+        exit 1
+    fi
+fi
 
-echo ""
-echo "=== All Antigravity Workspace Checks Passed ==="
+echo "=== All Powercord Developer Kit Checks Passed ==="

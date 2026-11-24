@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Powercord Developer Kit">
+  <defs>
+    <linearGradient id="pc-bg" x1="14" y1="14" x2="114" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="pc-bolt" x1="48" y1="28" x2="84" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect x="14" y="14" width="100" height="100" rx="24" fill="url(#pc-bg)" stroke="#E0E7FF" stroke-opacity="0.35" stroke-width="2.5"/>
+  <rect x="46" y="26" width="9" height="18" rx="4.5" fill="#F8FAFC"/>
+  <rect x="73" y="26" width="9" height="18" rx="4.5" fill="#F8FAFC"/>
+  <path d="M71 42H55L45 70H61L54 101L85 62H68L71 42Z" fill="url(#pc-bolt)" stroke="#1E1B4B" stroke-width="3" stroke-linejoin="round"/>
+</svg>
