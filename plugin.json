@@ -1,7 +1,7 @@
 {
   "name": "powercord-developer-kit",
   "displayName": "Powercord Developer Kit",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Domain skills, universal invariants, PostgreSQL MCP config, and production-safety hooks for the Powercord ecosystem.",
   "author": {
     "name": "Powercord Team",
